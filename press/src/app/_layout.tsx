@@ -12,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { useRoundStore } from '@/store/roundStore';
 import { theme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -26,12 +27,14 @@ export default function RootLayout() {
     DMMono_400Regular,
     DMMono_500Medium,
   });
+  // Block rendering until the saved round is restored — see roundStore.
+  const hydrated = useRoundStore((s) => s.hasHydrated);
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    if (loaded && hydrated) SplashScreen.hideAsync();
+  }, [loaded, hydrated]);
 
-  if (!loaded) return null;
+  if (!loaded || !hydrated) return null;
 
   return (
     <>

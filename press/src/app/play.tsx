@@ -8,6 +8,7 @@ import { Stepper } from '@/components/Stepper';
 import { JunkBar } from '@/components/play/JunkBar';
 import { WolfPicker } from '@/components/play/WolfPicker';
 import { computeResults } from '@/engine';
+import { snakeHolder } from '@/engine/junk';
 import type { Round } from '@/engine/types';
 import { useRoundStore } from '@/store/roundStore';
 import { fmtMoney, theme } from '@/theme';
@@ -57,6 +58,9 @@ export default function Play() {
   const par = round.holes[hole].par;
   const ids = round.players.map((p) => p.id);
   const wolfId = round.format === 'wolf' ? ids[hole % ids.length] : null;
+  const snakeId = round.junk.config.enabled.includes('snake')
+    ? snakeHolder(round.junk.events)
+    : null;
   const last = hole === round.numHoles - 1;
 
   // First tap lands on par; later taps step by one, never below 1.
@@ -155,6 +159,7 @@ export default function Play() {
                 <View style={styles.scoreName}>
                   <Text style={styles.playerName} numberOfLines={1}>
                     {p.name}
+                    {p.id === snakeId && ' 🐍'}
                     {isWolf && <Text style={styles.wolfTag}> · wolf</Text>}
                   </Text>
                   {rel != null && (
