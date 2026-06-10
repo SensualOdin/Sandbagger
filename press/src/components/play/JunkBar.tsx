@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { PillButton } from '@/components/PillButton';
+import { snakeHolder } from '@/engine/junk';
 import type { JunkEvent, JunkType, Round } from '@/engine/types';
 import { JUNK_TYPES } from '@/lib/formats';
 import { theme } from '@/theme';
@@ -32,11 +33,19 @@ export function JunkBar({ round, hole, onToggle }: JunkBarProps) {
   const has = (type: JunkType, playerId: string) =>
     round.junk.events.some((e) => e.hole === hole && e.type === type && e.playerId === playerId);
 
+  const holderId = snakeHolder(round.junk.events);
+  const holderName = round.players.find((p) => p.id === holderId)?.name;
+
+  const rowLabel = (row: { type: JunkType; label: string }) =>
+    row.type === 'snake'
+      ? `Snake 🐍 ${holderName ? `· ${holderName} has it` : '· nobody yet'}`
+      : row.label;
+
   return (
     <Card style={styles.card}>
       {rows.map((row) => (
         <View key={row.type} style={styles.row}>
-          <Text style={styles.label}>{row.label}</Text>
+          <Text style={styles.label}>{rowLabel(row)}</Text>
           <View style={styles.chips}>
             {round.players.map((p) => (
               <PillButton

@@ -31,7 +31,7 @@ export const JUNK_TYPES: { type: JunkType; label: string; hint: string }[] = [
   { type: 'birdie', label: 'Birdie', hint: 'one under par' },
   { type: 'eagle', label: 'Eagle', hint: 'two under par' },
   { type: 'polie', label: 'Polie', hint: 'putt longer than the flagstick' },
-  { type: 'snake', label: 'Snake', hint: 'three-putt — pays everyone' },
+  { type: 'snake', label: 'Snake', hint: '3-putt holds it — pot grows every hole, holder pays at the end' },
 ];
 
 export const defaultConfig = (players: Player[]): Required<FormatConfig> => ({

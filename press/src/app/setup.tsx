@@ -273,7 +273,11 @@ export default function Setup() {
                 {junkEnabled.map((t) => (
                   <Knob
                     key={t}
-                    label={`${JUNK_TYPES.find((j) => j.type === t)!.label} value`}
+                    label={
+                      t === 'snake'
+                        ? 'Snake pot per hole'
+                        : `${JUNK_TYPES.find((j) => j.type === t)!.label} value`
+                    }
                     prefix="$"
                     min={1}
                     value={junkValues[t] ?? 1}

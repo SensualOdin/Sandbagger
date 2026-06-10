@@ -2,8 +2,8 @@ import type { StateCreator } from 'zustand';
 
 import type { ID, JunkEvent, JunkType, ManualPress, Round, WolfDecision } from '@/engine/types';
 
-/** Bingo/bango/bongo: only one player can hold each per hole. */
-const EXCLUSIVE_TYPES: JunkType[] = ['bingo', 'bango', 'bongo'];
+/** Bingo/bango/bongo: one player per hole. Snake: one holder change per hole. */
+const EXCLUSIVE_TYPES: JunkType[] = ['bingo', 'bango', 'bongo', 'snake'];
 
 export interface RoundState {
   round: Round | null;

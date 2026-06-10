@@ -54,6 +54,14 @@ describe('roundSlice', () => {
     expect(h.get().round?.junk.events).toEqual([{ hole: 2, type: 'bingo', playerId: 'B' }]);
   });
 
+  it('moves the snake to the new player when tapped on the same hole', () => {
+    const h = harness();
+    h.get().startRound(baseRound());
+    h.get().toggleJunk({ hole: 4, type: 'snake', playerId: 'A' });
+    h.get().toggleJunk({ hole: 4, type: 'snake', playerId: 'B' });
+    expect(h.get().round?.junk.events).toEqual([{ hole: 4, type: 'snake', playerId: 'B' }]);
+  });
+
   it('allows the same non-exclusive junk for two players on one hole', () => {
     const h = harness();
     h.get().startRound(baseRound());
