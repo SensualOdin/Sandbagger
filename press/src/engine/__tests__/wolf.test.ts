@@ -14,7 +14,7 @@ describe('scoreWolf', () => {
       0: { A: 3, B: 5, C: 4, D: 4 }, // wolf A + partner B win
       1: { A: 4, B: 3, C: 4, D: 5 }, // wolf B lone (x2) wins
       2: { A: 3, B: 3, C: 5, D: 3 }, // wolf C blind (x3) loses
-      3: { A: 4, B: 5, C: 5, D: 4 }, // wolf D + partner A: best balls tie
+      3: { A: 4, B: 4, C: 5, D: 4 }, // wolf D + partner A: best balls tie 4-4
     });
     const round = mkRound({
       format: 'wolf',
