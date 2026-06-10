@@ -62,6 +62,11 @@ export default function Setup() {
   const toggleTeam1 = (id: string) =>
     setTeam1((t) => (t.includes(id) ? t.filter((x) => x !== id) : t.length < 2 ? [...t, id] : t));
 
+  const removePlayer = (id: string) => {
+    setPlayers((ps) => ps.filter((x) => x.id !== id));
+    setTeam1((t) => t.filter((x) => x !== id));
+  };
+
   const start = () => {
     const finalConfig: FormatConfig = { ...config };
     if (format === 'vegas') {
@@ -186,13 +191,13 @@ export default function Setup() {
                     style={styles.hcpInput}
                     placeholder="HCP"
                     placeholderTextColor={theme.inkFaint}
-                    keyboardType="number-pad"
+                    keyboardType="numbers-and-punctuation"
                     value={p.handicapIndex != null ? String(p.handicapIndex) : ''}
                     onChangeText={(t) => setHandicap(p.id, t)}
                   />
                 )}
                 {players.length > 2 && (
-                  <Pressable onPress={() => setPlayers((ps) => ps.filter((x) => x.id !== p.id))}>
+                  <Pressable onPress={() => removePlayer(p.id)}>
                     <Text style={styles.remove}>×</Text>
                   </Pressable>
                 )}

@@ -22,7 +22,14 @@ export const theme = {
   fontMono: 'DMMono_500Medium',
 } as const;
 
-/** "$5" / "-$5" money formatting used everywhere. */
-export const fmtMoney = (n: number): string =>
-  (n < 0 ? '-$' : '$') +
-  Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+/** "$5" / "-$2.50" money formatting used everywhere. */
+export const fmtMoney = (n: number): string => {
+  const cents = Math.round(Math.abs(n) * 100) % 100 !== 0;
+  return (
+    (n < 0 ? '-$' : '$') +
+    Math.abs(n).toLocaleString('en-US', {
+      minimumFractionDigits: cents ? 2 : 0,
+      maximumFractionDigits: 2,
+    })
+  );
+};

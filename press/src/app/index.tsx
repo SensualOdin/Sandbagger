@@ -9,6 +9,9 @@ import { theme } from '@/theme';
 export default function Home() {
   const round = useRoundStore((s) => s.round);
   const active = round?.status === 'active' ? round : null;
+  // A round finished but never saved (app killed at the settle screen) must
+  // stay reachable — otherwise the data sits in storage with no way in.
+  const unsettled = round?.status === 'complete' ? round : null;
   const holesEntered = active
     ? Object.values(active.scores).filter((h) =>
         active.players.every((p) => h[p.id] != null)
@@ -31,6 +34,14 @@ export default function Home() {
           <Pressable style={[styles.btn, styles.secondary]} onPress={() => router.push('/play')}>
             <Text style={styles.secondaryText}>
               Resume {FORMATS[active.format].label} · {holesEntered}/{active.numHoles} holes
+            </Text>
+          </Pressable>
+        )}
+
+        {unsettled && (
+          <Pressable style={[styles.btn, styles.secondary]} onPress={() => router.push('/settle')}>
+            <Text style={styles.secondaryText}>
+              Finish settling {FORMATS[unsettled.format].label}
             </Text>
           </Pressable>
         )}

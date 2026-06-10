@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,8 +8,17 @@ import { Stepper } from '@/components/Stepper';
 import { JunkBar } from '@/components/play/JunkBar';
 import { WolfPicker } from '@/components/play/WolfPicker';
 import { computeResults } from '@/engine';
+import type { Round } from '@/engine/types';
 import { useRoundStore } from '@/store/roundStore';
 import { fmtMoney, theme } from '@/theme';
+
+/** First hole missing a score from anyone — where a resumed round picks up. */
+function firstOpenHole(round: Round): number {
+  for (let h = 0; h < round.numHoles; h++) {
+    if (!round.players.every((p) => round.scores[h]?.[p.id] != null)) return h;
+  }
+  return round.numHoles - 1;
+}
 
 export default function Play() {
   const round = useRoundStore((s) => s.round);
@@ -19,7 +28,18 @@ export default function Play() {
   const addPress = useRoundStore((s) => s.addPress);
   const toggleJunk = useRoundStore((s) => s.toggleJunk);
   const completeRound = useRoundStore((s) => s.completeRound);
-  const [hole, setHole] = useState(0);
+  const [rawHole, setHole] = useState(() => (round ? firstOpenHole(round) : 0));
+
+  // A previous round's Play screen can stay mounted below the stack; clamp and
+  // reset so a new (possibly shorter) round never reads past its last hole.
+  const roundIdRef = useRef(round?.id);
+  useEffect(() => {
+    if (round && round.id !== roundIdRef.current) {
+      roundIdRef.current = round.id;
+      setHole(firstOpenHole(round));
+    }
+  }, [round]);
+  const hole = round ? Math.min(rawHole, round.numHoles - 1) : 0;
 
   const results = useMemo(() => (round ? computeResults(round) : null), [round]);
 

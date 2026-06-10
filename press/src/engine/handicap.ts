@@ -1,13 +1,23 @@
 import type { HoleInfo, Round, Scores } from './types';
 
-/** Strokes a player receives per hole, allocated by stroke index (wraps past 18). */
+/**
+ * Strokes a player receives per hole, allocated by stroke index.
+ * - Scales the 18-hole index down for 9-hole rounds.
+ * - Indexes above the hole count wrap (a second stroke on the hardest holes).
+ * - Plus handicaps (negative index) give strokes back, easiest holes first.
+ */
 export function strokesReceived(handicapIndex: number, holes: HoleInfo[]): number[] {
-  const course = Math.round(handicapIndex);
+  const n = holes.length;
+  const course = Math.round(handicapIndex * (n / 18));
+  const sign = course >= 0 ? 1 : -1;
+  const mag = Math.abs(course);
+  const full = Math.floor(mag / n);
+  const rem = mag % n;
   return holes.map((h) => {
-    let s = 0;
-    if (course >= h.strokeIndex) s += 1;
-    if (course >= h.strokeIndex + 18) s += 1;
-    return s;
+    // receiving: hardest first (SI 1 up); giving back: easiest first (SI n down)
+    const rank = sign >= 0 ? h.strokeIndex : n - h.strokeIndex + 1;
+    const strokes = full + (rank <= rem ? 1 : 0);
+    return strokes === 0 ? 0 : sign * strokes;
   });
 }
 

@@ -8,6 +8,10 @@ import { holeEntered, playerIds, zeroNet } from '../util';
  */
 export function scoreSixpoint(round: Round, scores: Scores): FormatNets {
   const ids = playerIds(round);
+  // The 4-2-0 split is only zero-sum for exactly three players.
+  if (ids.length !== 3) {
+    return { net: Object.fromEntries(ids.map((id) => [id, 0])), detail: { pts: {}, holesCounted: 0 } };
+  }
   const { pointValue } = round.config.sixpoint!;
   const pts = zeroNet(ids);
   let holesCounted = 0;

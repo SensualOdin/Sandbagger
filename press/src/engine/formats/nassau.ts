@@ -50,11 +50,12 @@ export function scoreNassau(round: Round, scores: Scores): FormatNets {
   }
 
   for (const mp of round.presses) {
-    const { end } = LEGS[mp.leg];
+    const { start, end } = LEGS[mp.leg];
     if (end > round.numHoles || mp.startHole >= end) continue;
-    const press = margin(scores, a, b, mp.startHole, end);
+    const pressStart = Math.max(start, mp.startHole); // a press never reaches into the other nine
+    const press = margin(scores, a, b, pressStart, end);
     netA += Math.sign(press.final) * perLeg;
-    pressLog.push({ leg: mp.leg, startHole: mp.startHole, result: press.final, source: 'manual' });
+    pressLog.push({ leg: mp.leg, startHole: pressStart, result: press.final, source: 'manual' });
   }
 
   return { net: { [a]: netA, [b]: neg(netA) }, detail: { legs, pressLog } };

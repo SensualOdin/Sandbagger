@@ -23,6 +23,28 @@ describe('strokesReceived', () => {
     const alloc = strokesReceived(5.4, mkHoles(18));
     expect(alloc.reduce((a, b) => a + b, 0)).toBe(5);
   });
+
+  it('halves the index for 9-hole rounds', () => {
+    const alloc = strokesReceived(10, mkHoles(9));
+    expect(alloc.reduce((a, b) => a + b, 0)).toBe(5);
+    expect(alloc[0]).toBe(1); // SI 1
+    expect(alloc[5]).toBe(0); // SI 6
+  });
+
+  it('gives plus-handicap strokes back on the easiest holes first', () => {
+    const alloc = strokesReceived(-2, mkHoles(18));
+    expect(alloc.reduce((a, b) => a + b, 0)).toBe(-2);
+    expect(alloc[17]).toBe(-1); // SI 18
+    expect(alloc[16]).toBe(-1); // SI 17
+    expect(alloc[0]).toBe(0);
+  });
+
+  it('allocates a third stroke above 36', () => {
+    const alloc = strokesReceived(37, mkHoles(18));
+    expect(alloc.reduce((a, b) => a + b, 0)).toBe(37);
+    expect(alloc[0]).toBe(3); // SI 1
+    expect(alloc[1]).toBe(2);
+  });
 });
 
 describe('netScores', () => {

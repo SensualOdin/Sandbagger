@@ -15,7 +15,11 @@ export function scoreWolf(round: Round, scores: Scores): FormatNets {
   for (let h = 0; h < round.numHoles; h++) {
     const wolfId = ids[h % ids.length];
     const d = round.wolf[h];
-    if (!d || !holeEntered(scores, h, ids) || (d.mode === 'partner' && !d.partnerId)) {
+    if (
+      !d ||
+      !holeEntered(scores, h, ids) ||
+      (d.mode === 'partner' && (!d.partnerId || d.partnerId === wolfId))
+    ) {
       holeLog.push({ hole: h, wolfId, resolved: false });
       continue;
     }

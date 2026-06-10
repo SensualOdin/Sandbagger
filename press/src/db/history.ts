@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 import type { Round, RoundResult } from '@/engine/types';
+import { fmtMoney } from '@/theme';
 
 export interface HistoryRow {
   id: string;
@@ -37,7 +38,7 @@ export function saveRound(round: Round, result: RoundResult): void {
   const top = [...result.perPlayer].sort((a, b) => b.total - a.total)[0];
   const topName = round.players.find((p) => p.id === top?.playerId)?.name ?? '';
   const topLine =
-    top && top.total > 0 ? `${topName} +$${Math.abs(top.total).toFixed(0)}` : 'All square';
+    top && top.total > 0 ? `${topName} +${fmtMoney(top.total)}` : 'All square';
   getDb().runSync(
     `INSERT OR REPLACE INTO rounds (id, created_at, format, num_holes, player_names, top_line, payload)
      VALUES (?, ?, ?, ?, ?, ?, ?);`,
