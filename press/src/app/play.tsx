@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/Card';
+import { Plaque } from '@/components/Plaque';
 import { Stepper } from '@/components/Stepper';
 import { JunkBar } from '@/components/play/JunkBar';
 import { WolfPicker } from '@/components/play/WolfPicker';
@@ -48,9 +50,7 @@ export default function Play() {
     return (
       <SafeAreaView style={styles.root}>
         <Text style={styles.empty}>No active round.</Text>
-        <Pressable style={styles.footerBtn} onPress={() => router.replace('/')}>
-          <Text style={styles.footerBtnText}>Home</Text>
-        </Pressable>
+        <Plaque kind="ghost" label="Home" onPress={() => router.replace('/')} style={styles.emptyBtn} />
       </SafeAreaView>
     );
   }
@@ -62,6 +62,7 @@ export default function Play() {
     ? snakeHolder(round.junk.events)
     : null;
   const last = hole === round.numHoles - 1;
+  const leader = [...results.perPlayer].sort((a, b) => b.total - a.total)[0];
 
   // First tap lands on par; later taps step by one, never below 1.
   const bump = (playerId: string, delta: number) => {
@@ -88,19 +89,29 @@ export default function Play() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
-      {/* standings strip */}
+      {/* the book: live standings ticker */}
       <View style={styles.strip}>
+        <Pressable
+          accessibilityLabel="home"
+          onPress={() => router.replace('/')}
+          hitSlop={10}
+          style={styles.homeBtn}
+        >
+          <Text style={styles.homeGlyph}>⌂</Text>
+        </Pressable>
         {results.perPlayer.map((r) => {
           const p = round.players.find((x) => x.id === r.playerId)!;
+          const leading = r.playerId === leader.playerId && r.total > 0;
           return (
             <View key={r.playerId} style={styles.stripItem}>
               <Text style={styles.stripName} numberOfLines={1}>
-                {p.name}
+                {leading ? '▲ ' : ''}
+                {p.name.toUpperCase()}
               </Text>
               <Text
                 style={[
                   styles.stripMoney,
-                  r.total > 0 && { color: theme.brass },
+                  r.total > 0 && { color: theme.brassBright },
                   r.total < 0 && { color: theme.down },
                 ]}
               >
@@ -118,13 +129,14 @@ export default function Play() {
             <Text style={[styles.arrow, hole === 0 && styles.arrowOff]}>‹</Text>
           </Pressable>
           <View style={styles.holeCenter}>
-            <Text style={styles.holeLabel}>HOLE</Text>
+            <Text style={styles.holeLabel}>✦ HOLE ✦</Text>
             <Text style={styles.holeNum}>{hole + 1}</Text>
+            <Text style={styles.holeOf}>OF {round.numHoles}</Text>
             <View style={styles.parRow}>
               <Pressable onPress={() => setPar(hole, Math.max(3, par - 1))} hitSlop={10}>
                 <Text style={styles.parBtn}>−</Text>
               </Pressable>
-              <Text style={styles.parText}>Par {par}</Text>
+              <Text style={styles.parText}>PAR {par}</Text>
               <Pressable onPress={() => setPar(hole, Math.min(6, par + 1))} hitSlop={10}>
                 <Text style={styles.parBtn}>+</Text>
               </Pressable>
@@ -142,44 +154,46 @@ export default function Play() {
         {round.format === 'nassau' && (
           <Pressable style={styles.pressBtn} onPress={confirmPress}>
             <Text style={styles.pressBtnText}>
-              ⚡ Press the {pressLeg}
-              {openPresses > 0 ? `  ·  ${openPresses} open` : ''}
+              ⚡ PRESS THE {pressLeg.toUpperCase()}
+              {openPresses > 0 ? `  ·  ${openPresses} OPEN` : ''}
             </Text>
           </Pressable>
         )}
 
         {/* score rows */}
         <View style={styles.scores}>
-          {round.players.map((p) => {
+          {round.players.map((p, i) => {
             const val = round.scores[hole]?.[p.id];
             const rel = val != null ? val - par : null;
             const isWolf = p.id === wolfId;
             return (
-              <Card key={p.id} style={[styles.scoreRow, isWolf && styles.wolfRow]}>
-                <View style={styles.scoreName}>
-                  <Text style={styles.playerName} numberOfLines={1}>
-                    {p.name}
-                    {p.id === snakeId && ' 🐍'}
-                    {isWolf && <Text style={styles.wolfTag}> · wolf</Text>}
-                  </Text>
-                  {rel != null && (
-                    <Text
-                      style={[
-                        styles.relPar,
-                        rel < 0 && { color: theme.up },
-                        rel > 0 && { color: theme.clay },
-                      ]}
-                    >
-                      {rel === 0 ? 'par' : rel > 0 ? `+${rel}` : `${rel}`}
+              <Animated.View key={p.id} entering={FadeInDown.delay(i * 50).springify()}>
+                <Card framed style={[styles.scoreRow, isWolf && styles.wolfRow]}>
+                  <View style={styles.scoreName}>
+                    <Text style={styles.playerName} numberOfLines={1}>
+                      {p.name}
+                      {p.id === snakeId && ' 🐍'}
+                      {isWolf && <Text style={styles.wolfTag}> · wolf</Text>}
                     </Text>
-                  )}
-                </View>
-                <Stepper
-                  display={val != null ? String(val) : '–'}
-                  onDec={() => bump(p.id, -1)}
-                  onInc={() => bump(p.id, +1)}
-                />
-              </Card>
+                    {rel != null && (
+                      <Text
+                        style={[
+                          styles.relPar,
+                          rel < 0 && { color: theme.up },
+                          rel > 0 && { color: theme.clay },
+                        ]}
+                      >
+                        {rel === 0 ? 'par' : rel > 0 ? `+${rel}` : `${rel}`}
+                      </Text>
+                    )}
+                  </View>
+                  <Stepper
+                    display={val != null ? String(val) : '–'}
+                    onDec={() => bump(p.id, -1)}
+                    onInc={() => bump(p.id, +1)}
+                  />
+                </Card>
+              </Animated.View>
             );
           })}
         </View>
@@ -190,13 +204,9 @@ export default function Play() {
       {/* footer */}
       <View style={styles.footer}>
         {last ? (
-          <Pressable style={[styles.footerBtn, styles.finishBtn]} onPress={finish}>
-            <Text style={styles.finishText}>Finish &amp; settle up</Text>
-          </Pressable>
+          <Plaque label="Finish & settle up" onPress={finish} />
         ) : (
-          <Pressable style={styles.footerBtn} onPress={() => setHole(hole + 1)}>
-            <Text style={styles.footerBtnText}>Next hole →</Text>
-          </Pressable>
+          <Plaque kind="ghost" label="Next hole →" onPress={() => setHole(hole + 1)} />
         )}
       </View>
     </SafeAreaView>
@@ -207,65 +217,82 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   flex: { flex: 1 },
   scroll: { paddingBottom: 16 },
-  empty: { fontFamily: theme.fontUI, color: theme.bone, textAlign: 'center', marginTop: 120, fontSize: 16 },
+  empty: { fontFamily: theme.fontDisplayItalic, color: theme.bone, textAlign: 'center', marginTop: 140, fontSize: 17 },
+  emptyBtn: { margin: 24 },
   strip: {
     flexDirection: 'row',
-    gap: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    gap: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.line,
+    borderBottomColor: 'rgba(201,162,75,0.35)',
+    backgroundColor: 'rgba(4,19,10,0.35)',
   },
-  stripItem: { minWidth: 60, alignItems: 'center' },
-  stripName: { fontFamily: theme.fontUI, fontSize: 12, color: theme.bone, opacity: 0.7, maxWidth: 80 },
-  stripMoney: { fontFamily: theme.fontMono, fontSize: 15, color: theme.bone, fontVariant: ['tabular-nums'] },
+  homeBtn: { justifyContent: 'center', paddingRight: 2 },
+  homeGlyph: { color: theme.boneMuted, fontSize: 18, lineHeight: 20 },
+  stripItem: { minWidth: 64, alignItems: 'center' },
+  stripName: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: theme.boneMuted,
+    maxWidth: 90,
+  },
+  stripMoney: {
+    fontFamily: theme.fontMono,
+    fontSize: 16,
+    color: theme.bone,
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
   holeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingTop: 14,
+    paddingHorizontal: 24,
+    paddingTop: 16,
     paddingBottom: 6,
   },
   holeCenter: { alignItems: 'center' },
-  holeLabel: { fontFamily: theme.fontMono, fontSize: 11, letterSpacing: 3, color: theme.brass },
-  holeNum: { fontFamily: theme.fontDisplay, fontSize: 44, color: theme.bone, lineHeight: 50 },
-  parRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  parBtn: { color: theme.brassDim, fontSize: 18, paddingHorizontal: 4 },
-  parText: { fontFamily: theme.fontMono, fontSize: 13, color: theme.bone, opacity: 0.8 },
-  arrow: { color: theme.bone, fontSize: 30, paddingHorizontal: 8 },
-  arrowOff: { opacity: 0.25 },
-  pressBtn: {
-    marginHorizontal: 16,
-    marginVertical: 6,
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    backgroundColor: theme.boneFaint,
-    borderWidth: 1,
-    borderColor: theme.brassDim,
+  holeLabel: { fontFamily: theme.fontMonoLight, fontSize: 10, letterSpacing: 4, color: theme.brass },
+  holeNum: {
+    fontFamily: theme.fontDisplayBlack,
+    fontSize: 64,
+    color: theme.bone,
+    lineHeight: 70,
+    letterSpacing: -2,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 8,
   },
-  pressBtnText: { fontFamily: theme.fontUISemi, fontSize: 14, color: theme.brass },
-  scores: { paddingHorizontal: 16, paddingVertical: 6, gap: 10 },
+  holeOf: { fontFamily: theme.fontMonoLight, fontSize: 10, letterSpacing: 3, color: theme.boneMuted },
+  parRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 },
+  parBtn: { color: theme.brassDim, fontSize: 18, paddingHorizontal: 4 },
+  parText: { fontFamily: theme.fontMono, fontSize: 12, letterSpacing: 2, color: theme.bone, opacity: 0.85 },
+  arrow: { color: theme.brass, fontSize: 34, paddingHorizontal: 8 },
+  arrowOff: { opacity: 0.2 },
+  pressBtn: {
+    marginHorizontal: 18,
+    marginVertical: 8,
+    padding: 13,
+    borderRadius: theme.radius.button,
+    alignItems: 'center',
+    backgroundColor: 'rgba(158,58,36,0.22)',
+    borderWidth: 1,
+    borderColor: theme.wax,
+  },
+  pressBtnText: { fontFamily: theme.fontUIBold, fontSize: 13, letterSpacing: 2, color: theme.down },
+  scores: { paddingHorizontal: 18, paddingVertical: 8, gap: 12 },
   scoreRow: {
-    padding: 14,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   wolfRow: { borderWidth: 2, borderColor: theme.brass },
   scoreName: { flexShrink: 1, paddingRight: 8 },
-  playerName: { fontFamily: theme.fontUIBold, fontSize: 16, color: theme.ink },
-  wolfTag: { fontFamily: theme.fontUI, color: theme.brassDim },
+  playerName: { fontFamily: theme.fontUIBold, fontSize: 17, color: theme.ink },
+  wolfTag: { fontFamily: theme.fontDisplayItalic, fontSize: 14, color: theme.brassDeep },
   relPar: { fontFamily: theme.fontMono, fontSize: 12, color: theme.inkFaint, marginTop: 2 },
-  footer: { padding: 16, paddingBottom: 24 },
-  footerBtn: {
-    padding: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    backgroundColor: theme.bone,
-  },
-  footerBtnText: { fontFamily: theme.fontUIBold, fontSize: 16, color: theme.ink },
-  finishBtn: { backgroundColor: theme.brass },
-  finishText: { fontFamily: theme.fontUIBold, fontSize: 17, color: theme.feltDeep },
+  footer: { padding: 18, paddingBottom: 26 },
 });

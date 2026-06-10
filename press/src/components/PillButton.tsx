@@ -14,7 +14,7 @@ interface PillButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Selectable chip used for wolf picks, junk dots, and toggles. */
+/** Ball-marker chip: stamped metal when selected, etched when idle. */
 export function PillButton({
   label,
   selected = false,
@@ -36,7 +36,15 @@ export function PillButton({
       style={({ pressed }) => [
         styles.pill,
         base,
-        selected && { backgroundColor: selectedColor },
+        selected && {
+          backgroundColor: selectedColor,
+          borderColor: 'rgba(4,19,10,0.45)',
+          shadowColor: '#000',
+          shadowOpacity: 0.35,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 3,
+        },
         disabled && styles.disabled,
         pressed && styles.pressed,
         style,
@@ -48,12 +56,17 @@ export function PillButton({
 }
 
 const styles = StyleSheet.create({
-  pill: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 },
-  light: { backgroundColor: theme.boneDim },
-  dark: { backgroundColor: theme.boneFaint, borderWidth: 1, borderColor: theme.line },
+  pill: {
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+  },
+  light: { backgroundColor: theme.boneDim, borderColor: theme.inkLine },
+  dark: { backgroundColor: theme.boneFaint, borderColor: theme.line },
   lightText: { fontFamily: theme.fontUISemi, fontSize: 13, color: theme.ink },
   darkText: { fontFamily: theme.fontUISemi, fontSize: 13, color: theme.bone },
   selectedText: { color: theme.bone },
   disabled: { opacity: 0.4 },
-  pressed: { transform: [{ scale: 0.97 }] },
+  pressed: { transform: [{ scale: 0.96 }] },
 });

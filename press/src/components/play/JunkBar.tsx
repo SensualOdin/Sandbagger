@@ -42,7 +42,7 @@ export function JunkBar({ round, hole, onToggle }: JunkBarProps) {
       : row.label;
 
   return (
-    <Card style={styles.card}>
+    <Card framed style={styles.card}>
       {rows.map((row) => (
         <View key={row.type} style={styles.row}>
           <Text style={styles.label}>{rowLabel(row)}</Text>
@@ -64,8 +64,14 @@ export function JunkBar({ round, hole, onToggle }: JunkBarProps) {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 16, marginVertical: 6, padding: 14, gap: 10 },
-  row: { gap: 6 },
-  label: { fontFamily: theme.fontUISemi, fontSize: 12, color: theme.brassDim },
+  card: { marginHorizontal: 18, marginVertical: 6, padding: 15, gap: 10 },
+  row: { gap: 7 },
+  label: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    color: theme.brassDeep,
+    textTransform: 'uppercase',
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

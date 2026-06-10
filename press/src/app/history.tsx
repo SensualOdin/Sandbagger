@@ -1,12 +1,14 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/Card';
+import { Plaque } from '@/components/Plaque';
 import { deleteRound, listRounds, type HistoryRow } from '@/db/history';
-import { FORMATS } from '@/lib/formats';
 import type { FormatKey } from '@/engine/types';
+import { FORMATS } from '@/lib/formats';
 import { theme } from '@/theme';
 
 export default function History() {
@@ -33,10 +35,11 @@ export default function History() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
+      <Text style={styles.kicker}>✦ THE LEDGER ✦</Text>
       <Text style={styles.title}>History</Text>
       {rows.length === 0 ? (
         <View style={styles.emptyWrap}>
-          <Text style={styles.empty}>No rounds yet.</Text>
+          <Text style={styles.empty}>No rounds on the books.</Text>
           <Text style={styles.emptySub}>Go take someone&apos;s money.</Text>
         </View>
       ) : (
@@ -44,59 +47,66 @@ export default function History() {
           data={rows}
           keyExtractor={(r) => r.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => router.push({ pathname: '/round/[id]', params: { id: item.id } })}
-              onLongPress={() => confirmDelete(item)}
-            >
-              <Card style={styles.row}>
-                <View style={styles.rowLeft}>
-                  <Text style={styles.format}>
-                    {FORMATS[item.format as FormatKey]?.label ?? item.format} · {item.numHoles}
-                  </Text>
-                  <Text style={styles.players} numberOfLines={1}>
-                    {item.playerNames.join(', ')}
-                  </Text>
-                  <Text style={styles.date}>
-                    {new Date(item.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                </View>
-                <Text style={styles.topLine}>{item.topLine}</Text>
-              </Card>
-            </Pressable>
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInDown.delay(index * 60).springify()}>
+              <Pressable
+                onPress={() => router.push({ pathname: '/round/[id]', params: { id: item.id } })}
+                onLongPress={() => confirmDelete(item)}
+              >
+                <Card framed style={styles.row}>
+                  <View style={styles.rowLeft}>
+                    <Text style={styles.format}>
+                      {FORMATS[item.format as FormatKey]?.label ?? item.format} · {item.numHoles}
+                    </Text>
+                    <Text style={styles.players} numberOfLines={1}>
+                      {item.playerNames.join(', ')}
+                    </Text>
+                    <Text style={styles.date}>
+                      {new Date(item.createdAt)
+                        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                  <Text style={styles.topLine}>{item.topLine}</Text>
+                </Card>
+              </Pressable>
+            </Animated.View>
           )}
         />
       )}
-      <Pressable style={styles.homeBtn} onPress={() => router.back()}>
-        <Text style={styles.homeText}>← Back</Text>
-      </Pressable>
+      <Plaque kind="ghost" label="← Back" onPress={() => router.back()} style={styles.backBtn} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: 18 },
+  root: { flex: 1, padding: 20 },
+  kicker: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 10,
+    letterSpacing: 4,
+    color: theme.brass,
+    textAlign: 'center',
+    marginTop: 8,
+  },
   title: {
-    fontFamily: theme.fontDisplay,
-    fontSize: 34,
+    fontFamily: theme.fontDisplayBlack,
+    fontSize: 40,
     color: theme.bone,
     textAlign: 'center',
-    marginBottom: 18,
+    marginTop: 4,
+    marginBottom: 20,
+    letterSpacing: -1,
   },
-  list: { gap: 10, paddingBottom: 16 },
-  row: { padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  list: { gap: 12, paddingBottom: 16 },
+  row: { padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowLeft: { flexShrink: 1, paddingRight: 10 },
-  format: { fontFamily: theme.fontUIBold, fontSize: 15, color: theme.ink },
-  players: { fontFamily: theme.fontUI, fontSize: 13, color: theme.inkFaint, marginTop: 2 },
-  date: { fontFamily: theme.fontMono, fontSize: 11, color: theme.inkFaint, marginTop: 4 },
+  format: { fontFamily: theme.fontDisplay, fontSize: 17, color: theme.ink },
+  players: { fontFamily: theme.fontUI, fontSize: 13, color: theme.inkSoft, marginTop: 3 },
+  date: { fontFamily: theme.fontMonoLight, fontSize: 10, letterSpacing: 2, color: theme.inkFaint, marginTop: 5 },
   topLine: { fontFamily: theme.fontMono, fontSize: 14, color: theme.up },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   empty: { fontFamily: theme.fontDisplay, fontSize: 22, color: theme.bone },
-  emptySub: { fontFamily: theme.fontUI, fontSize: 14, color: theme.boneMuted, marginTop: 6 },
-  homeBtn: { padding: 14, alignItems: 'center' },
-  homeText: { fontFamily: theme.fontUISemi, fontSize: 15, color: theme.bone },
+  emptySub: { fontFamily: theme.fontDisplayItalic, fontSize: 14, color: theme.boneMuted, marginTop: 8 },
+  backBtn: { marginTop: 8 },
 });

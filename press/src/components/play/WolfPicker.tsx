@@ -19,9 +19,10 @@ export function WolfPicker({ round, hole, onPick }: WolfPickerProps) {
   const { loneMult, blindMult } = round.config.wolf!;
 
   return (
-    <Card style={styles.card}>
+    <Card framed style={styles.card}>
       <Text style={styles.title}>
-        🐺 Wolf this hole: <Text style={styles.wolfName}>{name(wolfId)}</Text>
+        🐺 <Text style={styles.titleItalic}>Wolf this hole —</Text>{' '}
+        <Text style={styles.wolfName}>{name(wolfId)}</Text>
       </Text>
       <View style={styles.chips}>
         {ids
@@ -52,8 +53,9 @@ export function WolfPicker({ round, hole, onPick }: WolfPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 16, marginVertical: 6, padding: 14 },
-  title: { fontFamily: theme.fontUISemi, fontSize: 13, color: theme.brassDim, marginBottom: 10 },
-  wolfName: { color: theme.ink },
+  card: { marginHorizontal: 18, marginVertical: 6, padding: 15 },
+  title: { fontFamily: theme.fontUISemi, fontSize: 14, color: theme.brassDeep, marginBottom: 10 },
+  titleItalic: { fontFamily: theme.fontDisplayItalic },
+  wolfName: { fontFamily: theme.fontUIBold, color: theme.ink },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

@@ -1,19 +1,6 @@
-import { StyleSheet, Text } from 'react-native';
+import { Rule } from '@/components/Rule';
 
-import { theme } from '@/theme';
-
+/** Section headers are engraved rules now — same API, clubhouse look. */
 export function SectionLabel({ children }: { children: string }) {
-  return <Text style={styles.label}>{children.toUpperCase()}</Text>;
+  return <Rule label={children} />;
 }
-
-const styles = StyleSheet.create({
-  label: {
-    fontFamily: theme.fontUISemi,
-    fontSize: 12,
-    letterSpacing: 2,
-    color: theme.brass,
-    marginHorizontal: 4,
-    marginBottom: 10,
-    marginTop: 2,
-  },
-});

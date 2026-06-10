@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useMemo, useRef } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 
+import { Plaque } from '@/components/Plaque';
 import { SettleView } from '@/components/settle/SettleView';
 import { computeResults } from '@/engine';
 import { saveRound } from '@/db/history';
@@ -22,9 +24,7 @@ export default function Settle() {
     return (
       <SafeAreaView style={styles.root}>
         <Text style={styles.empty}>No round to settle.</Text>
-        <Pressable style={styles.secondaryBtn} onPress={() => router.replace('/')}>
-          <Text style={styles.secondaryText}>Home</Text>
-        </Pressable>
+        <Plaque kind="ghost" label="Home" onPress={() => router.replace('/')} style={styles.emptyBtn} />
       </SafeAreaView>
     );
   }
@@ -45,22 +45,19 @@ export default function Settle() {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View ref={shotRef} collapsable={false} style={styles.shot}>
-          <SettleView round={round} result={result} />
-        </View>
+        <Animated.View entering={FadeInDown.springify().damping(14)}>
+          <View ref={shotRef} collapsable={false} style={styles.shot}>
+            <SettleView round={round} result={result} />
+          </View>
+        </Animated.View>
 
-        <Pressable style={styles.shareBtn} onPress={share}>
-          <Text style={styles.shareText}>Share the damage</Text>
-        </Pressable>
-
-        <View style={styles.actions}>
-          <Pressable style={styles.secondaryBtn} onPress={() => router.back()}>
-            <Text style={styles.secondaryText}>← Back to round</Text>
-          </Pressable>
-          <Pressable style={styles.primaryBtn} onPress={saveAndNew}>
-            <Text style={styles.primaryText}>Save &amp; done</Text>
-          </Pressable>
-        </View>
+        <Animated.View entering={FadeInUp.delay(250).springify()}>
+          <Plaque kind="ghost" label="Share the damage" onPress={share} style={styles.shareBtn} />
+          <View style={styles.actions}>
+            <Plaque kind="ghost" label="← Back to round" onPress={() => router.back()} style={styles.flex1} />
+            <Plaque label="Save & done" onPress={saveAndNew} style={styles.flex1} />
+          </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -68,30 +65,12 @@ export default function Settle() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { padding: 18, paddingBottom: 40 },
-  shot: { backgroundColor: theme.felt },
-  empty: { fontFamily: theme.fontUI, color: theme.bone, textAlign: 'center', marginTop: 120, fontSize: 16 },
-  shareBtn: {
-    padding: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    backgroundColor: theme.boneFaint,
-    borderWidth: 1,
-    borderColor: theme.brassDim,
-    marginBottom: 12,
-  },
-  shareText: { fontFamily: theme.fontUISemi, fontSize: 15, color: theme.brass },
+  scroll: { padding: 20, paddingBottom: 44 },
+  // solid felt so the shared PNG isn't transparent
+  shot: { backgroundColor: theme.feltDeep, borderRadius: 12, padding: 6 },
+  empty: { fontFamily: theme.fontDisplayItalic, color: theme.bone, textAlign: 'center', marginTop: 140, fontSize: 17 },
+  emptyBtn: { margin: 24 },
+  shareBtn: { marginBottom: 12 },
   actions: { flexDirection: 'row', gap: 10 },
-  primaryBtn: { flex: 1, padding: 15, borderRadius: 14, alignItems: 'center', backgroundColor: theme.brass },
-  primaryText: { fontFamily: theme.fontUIBold, fontSize: 15, color: theme.feltDeep },
-  secondaryBtn: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    backgroundColor: theme.boneFaint,
-    borderWidth: 1,
-    borderColor: theme.line,
-  },
-  secondaryText: { fontFamily: theme.fontUISemi, fontSize: 15, color: theme.bone },
+  flex1: { flex: 1 },
 });

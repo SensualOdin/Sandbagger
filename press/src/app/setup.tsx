@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -11,17 +12,19 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/Card';
 import { Knob } from '@/components/Knob';
 import { PillButton } from '@/components/PillButton';
-import { SectionLabel } from '@/components/SectionLabel';
+import { Plaque } from '@/components/Plaque';
+import { Rule } from '@/components/Rule';
 import type { FormatConfig, FormatKey, JunkType, Player } from '@/engine/types';
 import { buildRound, defaultConfig, FORMAT_KEYS, FORMATS, formatAvailable, JUNK_TYPES } from '@/lib/formats';
 import { newId } from '@/lib/id';
 import { useRoundStore } from '@/store/roundStore';
-import { theme } from '@/theme';
+import { BRASS_GRADIENT, theme } from '@/theme';
 
 const mkPlayer = (): Player => ({ id: newId(), name: '' });
 
@@ -172,100 +175,121 @@ export default function Setup() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>New round</Text>
+          <Animated.View entering={FadeInDown.springify()}>
+            <Pressable onPress={() => router.back()} hitSlop={12} style={styles.close}>
+              <Text style={styles.closeGlyph}>✕</Text>
+            </Pressable>
+            <Text style={styles.kicker}>OPEN THE BOOK</Text>
+            <Text style={styles.title}>New round</Text>
+          </Animated.View>
 
-          <SectionLabel>Players</SectionLabel>
-          <Card style={styles.playersCard}>
-            {players.map((p, i) => (
-              <View key={p.id} style={[styles.playerRow, i > 0 && styles.rowDivider]}>
-                <Text style={styles.playerNum}>{i + 1}</Text>
-                <TextInput
-                  style={styles.nameInput}
-                  placeholder={`Player ${i + 1}`}
-                  placeholderTextColor={theme.inkFaint}
-                  value={p.name}
-                  onChangeText={(t) => setName(p.id, t)}
-                />
-                {useNet && (
+          <Rule label="Players" />
+          <Animated.View entering={FadeInDown.delay(80).springify()}>
+            <Card framed style={styles.playersCard}>
+              {players.map((p, i) => (
+                <View key={p.id} style={[styles.playerRow, i > 0 && styles.rowDivider]}>
+                  <Text style={styles.playerNum}>{String(i + 1).padStart(2, '0')}</Text>
                   <TextInput
-                    style={styles.hcpInput}
-                    placeholder="HCP"
+                    style={styles.nameInput}
+                    placeholder={`Player ${i + 1}`}
                     placeholderTextColor={theme.inkFaint}
-                    keyboardType="numbers-and-punctuation"
-                    value={p.handicapIndex != null ? String(p.handicapIndex) : ''}
-                    onChangeText={(t) => setHandicap(p.id, t)}
+                    value={p.name}
+                    onChangeText={(t) => setName(p.id, t)}
                   />
-                )}
-                {players.length > 2 && (
-                  <Pressable onPress={() => removePlayer(p.id)}>
-                    <Text style={styles.remove}>×</Text>
-                  </Pressable>
-                )}
-              </View>
-            ))}
-            {players.length < 6 && (
-              <Pressable
-                style={[styles.addRow, styles.rowDivider]}
-                onPress={() => setPlayers((ps) => [...ps, mkPlayer()])}
-              >
-                <Text style={styles.addText}>+ Add player</Text>
-              </Pressable>
-            )}
-          </Card>
-
-          <SectionLabel>Holes</SectionLabel>
-          <View style={styles.holesRow}>
-            {([9, 18] as const).map((h) => (
-              <Pressable
-                key={h}
-                style={[styles.holeBtn, numHoles === h && styles.holeBtnSel]}
-                onPress={() => setNumHoles(h)}
-              >
-                <Text style={[styles.holeText, numHoles === h && styles.holeTextSel]}>{h} holes</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <SectionLabel>Game</SectionLabel>
-          <View style={styles.formats}>
-            {FORMAT_KEYS.map((k) => {
-              const f = FORMATS[k];
-              const reason = formatAvailable(k, count, numHoles);
-              const sel = format === k;
-              return (
+                  {useNet && (
+                    <TextInput
+                      style={styles.hcpInput}
+                      placeholder="HCP"
+                      placeholderTextColor={theme.inkFaint}
+                      keyboardType="numbers-and-punctuation"
+                      value={p.handicapIndex != null ? String(p.handicapIndex) : ''}
+                      onChangeText={(t) => setHandicap(p.id, t)}
+                    />
+                  )}
+                  {players.length > 2 && (
+                    <Pressable onPress={() => removePlayer(p.id)} hitSlop={8}>
+                      <Text style={styles.remove}>×</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+              {players.length < 6 && (
                 <Pressable
-                  key={k}
-                  disabled={!!reason}
-                  onPress={() => setFormat(k)}
-                  style={[styles.formatCard, sel && styles.formatSel, !!reason && styles.formatOff]}
+                  style={[styles.addRow, styles.rowDivider]}
+                  onPress={() => setPlayers((ps) => [...ps, mkPlayer()])}
                 >
-                  <View style={styles.formatHead}>
-                    <Text style={[styles.formatLabel, sel && styles.formatLabelSel]}>{f.label}</Text>
-                    <Text style={[styles.formatPlayers, sel && styles.formatLabelSel]}>
-                      {f.min === f.max ? `${f.min}p` : `${f.min}–${f.max}p`}
-                    </Text>
-                  </View>
-                  <Text style={[styles.formatBlurb, sel && styles.formatLabelSel]}>{f.blurb}</Text>
-                  {reason && <Text style={styles.formatReason}>{reason}</Text>}
+                  <Text style={styles.addText}>+ Add player</Text>
+                </Pressable>
+              )}
+            </Card>
+          </Animated.View>
+
+          <Rule label="Holes" />
+          <View style={styles.holesRow}>
+            {([9, 18] as const).map((h) => {
+              const sel = numHoles === h;
+              return (
+                <Pressable key={h} style={styles.holeWrap} onPress={() => setNumHoles(h)}>
+                  {sel ? (
+                    <LinearGradient colors={BRASS_GRADIENT} style={styles.holeBtnSel}>
+                      <Text style={styles.holeTextSel}>{h} HOLES</Text>
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.holeBtn}>
+                      <Text style={styles.holeText}>{h} HOLES</Text>
+                    </View>
+                  )}
                 </Pressable>
               );
             })}
           </View>
 
-          <SectionLabel>Stakes &amp; house rules</SectionLabel>
-          <Card style={styles.knobCard}>{knobs}</Card>
+          <Rule label="The game" />
+          <View style={styles.formats}>
+            {FORMAT_KEYS.map((k) => {
+              const f = FORMATS[k];
+              const reason = formatAvailable(k, count, numHoles);
+              const sel = format === k;
+              const inner = (
+                <>
+                  <View style={styles.formatHead}>
+                    <Text style={[styles.formatLabel, sel && styles.onBrass]}>{f.label}</Text>
+                    <Text style={[styles.formatPlayers, sel ? styles.onBrass : null]}>
+                      {f.min === f.max ? `${f.min}P` : `${f.min}–${f.max}P`}
+                    </Text>
+                  </View>
+                  <Text style={[styles.formatBlurb, sel && styles.onBrassSoft]}>{f.blurb}</Text>
+                  {reason && <Text style={styles.formatReason}>{reason}</Text>}
+                </>
+              );
+              return (
+                <Pressable key={k} disabled={!!reason} onPress={() => setFormat(k)}>
+                  {sel ? (
+                    <LinearGradient colors={BRASS_GRADIENT} locations={[0, 0.6, 1]} style={styles.formatSel}>
+                      {inner}
+                    </LinearGradient>
+                  ) : (
+                    <View style={[styles.formatCard, !!reason && styles.formatOff]}>{inner}</View>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Rule label="Stakes & house rules" />
+          <Card framed style={styles.knobCard}>{knobs}</Card>
 
           {format !== 'bingoBangoBongo' && (
             <>
-              <SectionLabel>Junk · dots</SectionLabel>
-              <Card style={styles.knobCard}>
+              <Rule label="Junk · dots" />
+              <Card framed style={styles.knobCard}>
                 <View style={styles.chips}>
                   {JUNK_TYPES.map((j) => (
                     <PillButton
                       key={j.type}
                       label={j.label}
                       selected={junkEnabled.includes(j.type)}
-                      selectedColor={j.type === 'snake' ? theme.clay : theme.up}
+                      selectedColor={j.type === 'snake' ? theme.wax : theme.up}
                       onPress={() => toggleJunkType(j.type)}
                     />
                   ))}
@@ -288,25 +312,24 @@ export default function Setup() {
             </>
           )}
 
-          <Card style={styles.knobCard}>
+          <Card framed style={[styles.knobCard, styles.netCard]}>
             <RowToggle label="Net scoring (handicaps)" value={useNet} onChange={setUseNet} />
           </Card>
 
-          <Pressable
-            style={[styles.start, !canStart && styles.startOff]}
-            disabled={!canStart}
-            onPress={start}
-          >
-            <Text style={[styles.startText, !canStart && styles.startTextOff]}>
-              {canStart
-                ? 'Start round →'
+          <Plaque
+            label={
+              canStart
+                ? 'Start round'
                 : !named
                   ? 'Name all players'
                   : blocked
                     ? 'Pick a valid game'
-                    : 'Pick team 1 (2 players)'}
-            </Text>
-          </Pressable>
+                    : 'Pick team 1 (2 players)'
+            }
+            disabled={!canStart}
+            onPress={start}
+            style={styles.start}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -330,69 +353,92 @@ function RowToggle({ label, value, onChange }: { label: string; value: boolean; 
 const styles = StyleSheet.create({
   root: { flex: 1 },
   flex: { flex: 1 },
-  scroll: { padding: 18, paddingBottom: 48 },
+  scroll: { padding: 20, paddingBottom: 52 },
+  close: { position: 'absolute', left: 2, top: 2, zIndex: 2, padding: 6 },
+  closeGlyph: { color: theme.boneMuted, fontSize: 20 },
+  kicker: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 11,
+    letterSpacing: 4,
+    color: theme.brass,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
   title: {
-    fontFamily: theme.fontDisplay,
-    fontSize: 34,
+    fontFamily: theme.fontDisplayBlack,
+    fontSize: 38,
     color: theme.bone,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
-  playersCard: { padding: 8, marginBottom: 22 },
-  playerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
-  rowDivider: { borderTopWidth: 1, borderTopColor: theme.inkLine },
-  playerNum: { fontFamily: theme.fontMono, fontSize: 14, color: theme.brassDim, width: 20 },
+  playersCard: { padding: 10, marginBottom: 8 },
+  playerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 },
+  rowDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.inkHairline },
+  playerNum: { fontFamily: theme.fontMonoLight, fontSize: 12, color: theme.brassDeep, width: 22 },
   nameInput: { flex: 1, fontFamily: theme.fontUISemi, fontSize: 16, color: theme.ink, padding: 0 },
   hcpInput: {
-    width: 52,
+    width: 54,
     fontFamily: theme.fontMono,
     fontSize: 14,
     color: theme.ink,
     backgroundColor: theme.boneDim,
     borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.inkHairline,
     paddingHorizontal: 8,
     paddingVertical: 6,
     textAlign: 'center',
   },
   remove: { color: theme.clay, fontSize: 22, paddingHorizontal: 6 },
   addRow: { padding: 12, alignItems: 'center' },
-  addText: { fontFamily: theme.fontUISemi, fontSize: 14, color: theme.brassDim },
-  holesRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
+  addText: { fontFamily: theme.fontUISemi, fontSize: 14, color: theme.brassDeep },
+  holesRow: { flexDirection: 'row', gap: 12, marginBottom: 8 },
+  holeWrap: { flex: 1 },
   holeBtn: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 14,
+    padding: 15,
+    borderRadius: theme.radius.button,
     alignItems: 'center',
     backgroundColor: theme.boneFaint,
     borderWidth: 1,
     borderColor: theme.line,
   },
-  holeBtnSel: { backgroundColor: theme.brass, borderColor: theme.brass },
-  holeText: { fontFamily: theme.fontUISemi, fontSize: 16, color: theme.bone },
-  holeTextSel: { color: theme.feltDeep },
-  formats: { gap: 10, marginBottom: 22 },
+  holeBtnSel: {
+    padding: 15,
+    borderRadius: theme.radius.button,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(36,27,8,0.5)',
+  },
+  holeText: { fontFamily: theme.fontUISemi, fontSize: 14, letterSpacing: 2, color: theme.bone },
+  holeTextSel: { fontFamily: theme.fontUIBold, fontSize: 14, letterSpacing: 2, color: theme.brassInk },
+  formats: { gap: 10, marginBottom: 8 },
   formatCard: {
     padding: 16,
-    borderRadius: 14,
+    borderRadius: theme.radius.card,
     backgroundColor: theme.boneFaint,
     borderWidth: 1,
     borderColor: theme.line,
   },
-  formatSel: { backgroundColor: theme.brass, borderColor: theme.brass },
-  formatOff: { opacity: 0.55 },
+  formatSel: {
+    padding: 16,
+    borderRadius: theme.radius.card,
+    borderWidth: 1,
+    borderColor: 'rgba(36,27,8,0.5)',
+  },
+  formatOff: { opacity: 0.5 },
   formatHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  formatLabel: { fontFamily: theme.fontDisplay, fontSize: 20, color: theme.bone },
-  formatLabelSel: { color: theme.feltDeep },
-  formatPlayers: { fontFamily: theme.fontMono, fontSize: 11, color: theme.bone },
-  formatBlurb: { fontFamily: theme.fontUI, fontSize: 13, color: theme.bone, marginTop: 3, opacity: 0.85 },
-  formatReason: { fontFamily: theme.fontUI, fontSize: 11, color: theme.down, marginTop: 4 },
-  knobCard: { padding: 16, marginBottom: 22, gap: 4 },
-  hint: { fontFamily: theme.fontUI, fontSize: 12, color: theme.inkFaint, marginTop: 6, marginBottom: 8 },
+  formatLabel: { fontFamily: theme.fontDisplay, fontSize: 21, color: theme.bone },
+  formatPlayers: { fontFamily: theme.fontMonoLight, fontSize: 11, letterSpacing: 1, color: theme.boneMuted },
+  formatBlurb: { fontFamily: theme.fontDisplayItalic, fontSize: 13, color: theme.boneMuted, marginTop: 4 },
+  formatReason: { fontFamily: theme.fontUI, fontSize: 11, color: theme.down, marginTop: 5 },
+  onBrass: { color: theme.brassInk },
+  onBrassSoft: { color: 'rgba(36,27,8,0.7)' },
+  knobCard: { padding: 16, marginBottom: 8, gap: 4 },
+  netCard: { marginTop: 14 },
+  hint: { fontFamily: theme.fontDisplayItalic, fontSize: 12, color: theme.inkSoft, marginTop: 6, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 2 },
   toggleLabel: { fontFamily: theme.fontUISemi, fontSize: 14, color: theme.ink, flexShrink: 1, paddingRight: 8 },
-  start: { padding: 17, borderRadius: 16, alignItems: 'center', backgroundColor: theme.brass, marginTop: 4 },
-  startOff: { backgroundColor: 'rgba(244,239,225,0.12)' },
-  startText: { fontFamily: theme.fontUIBold, fontSize: 17, color: theme.feltDeep },
-  startTextOff: { color: theme.boneMuted },
+  start: { marginTop: 18 },
 });

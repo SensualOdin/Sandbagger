@@ -1,5 +1,9 @@
 import { DMMono_400Regular, DMMono_500Medium } from '@expo-google-fonts/dm-mono';
-import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
+import {
+  Fraunces_500Medium_Italic,
+  Fraunces_600SemiBold,
+  Fraunces_900Black,
+} from '@expo-google-fonts/fraunces';
 import {
   HankenGrotesk_400Regular,
   HankenGrotesk_500Medium,
@@ -11,7 +15,9 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 
+import { Backdrop } from '@/components/Backdrop';
 import { useRoundStore } from '@/store/roundStore';
 import { theme } from '@/theme';
 
@@ -19,7 +25,9 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
+    Fraunces_500Medium_Italic,
     Fraunces_600SemiBold,
+    Fraunces_900Black,
     HankenGrotesk_400Regular,
     HankenGrotesk_500Medium,
     HankenGrotesk_600SemiBold,
@@ -37,14 +45,16 @@ export default function RootLayout() {
   if (!loaded || !hydrated) return null;
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: theme.feltDeep }}>
+      <Backdrop />
       <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.felt },
+          contentStyle: { backgroundColor: 'transparent' },
+          animation: 'fade_from_bottom',
         }}
       />
-    </>
+    </View>
   );
 }

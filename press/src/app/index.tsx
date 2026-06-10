@@ -1,7 +1,10 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Crest } from '@/components/Crest';
+import { Plaque } from '@/components/Plaque';
 import { FORMATS } from '@/lib/formats';
 import { useRoundStore } from '@/store/roundStore';
 import { theme } from '@/theme';
@@ -21,61 +24,95 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
-        <Text style={styles.title}>Press</Text>
-        <Text style={styles.subtitle}>GOLF MONEY GAMES</Text>
+        <Animated.View entering={FadeIn.duration(900)}>
+          <Crest size={92} />
+        </Animated.View>
+        <Animated.Text entering={FadeInDown.delay(120).springify()} style={styles.title}>
+          Press
+        </Animated.Text>
+        <Animated.View entering={FadeInDown.delay(260).springify()} style={styles.estRow}>
+          <View style={styles.estLine} />
+          <Text style={styles.subtitle}>GOLF MONEY GAMES</Text>
+          <View style={styles.estLine} />
+        </Animated.View>
+        <Animated.Text entering={FadeIn.delay(420).duration(700)} style={styles.motto}>
+          scoring is easy — the money is the game
+        </Animated.Text>
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={[styles.btn, styles.primary]} onPress={() => router.push('/setup')}>
-          <Text style={styles.primaryText}>New round</Text>
-        </Pressable>
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <Plaque label="New round" onPress={() => router.push('/setup')} />
+        </Animated.View>
 
         {active && (
-          <Pressable style={[styles.btn, styles.secondary]} onPress={() => router.push('/play')}>
-            <Text style={styles.secondaryText}>
-              Resume {FORMATS[active.format].label} · {holesEntered}/{active.numHoles} holes
-            </Text>
-          </Pressable>
+          <Animated.View entering={FadeInDown.delay(380).springify()}>
+            <Plaque
+              kind="ghost"
+              label={`Resume ${FORMATS[active.format].label} · ${holesEntered}/${active.numHoles} holes`}
+              onPress={() => router.push('/play')}
+            />
+          </Animated.View>
         )}
 
         {unsettled && (
-          <Pressable style={[styles.btn, styles.secondary]} onPress={() => router.push('/settle')}>
-            <Text style={styles.secondaryText}>
-              Finish settling {FORMATS[unsettled.format].label}
-            </Text>
-          </Pressable>
+          <Animated.View entering={FadeInDown.delay(380).springify()}>
+            <Plaque
+              kind="ghost"
+              label={`Finish settling ${FORMATS[unsettled.format].label}`}
+              onPress={() => router.push('/settle')}
+            />
+          </Animated.View>
         )}
 
-        <Pressable style={[styles.btn, styles.secondary]} onPress={() => router.push('/history')}>
-          <Text style={styles.secondaryText}>History</Text>
-        </Pressable>
+        <Animated.View entering={FadeInDown.delay(460).springify()}>
+          <Plaque kind="ghost" label="History" onPress={() => router.push('/history')} />
+        </Animated.View>
       </View>
 
-      <Text style={styles.footer}>
+      <Animated.Text entering={FadeIn.delay(700).duration(800)} style={styles.footer}>
         Press tracks friendly wagers. It never moves money — settle up yourselves,
         responsibly and legally.
-      </Text>
+      </Animated.Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, padding: 18, justifyContent: 'space-between' },
-  header: { alignItems: 'center', paddingTop: 80 },
-  title: { fontFamily: theme.fontDisplay, fontSize: 64, color: theme.bone, letterSpacing: -1 },
-  subtitle: { fontFamily: theme.fontMono, fontSize: 13, color: theme.brass, letterSpacing: 4, marginTop: 8 },
+  root: { flex: 1, padding: 22, justifyContent: 'space-between' },
+  header: { alignItems: 'center', paddingTop: 64 },
+  title: {
+    fontFamily: theme.fontDisplayBlack,
+    fontSize: 76,
+    color: theme.bone,
+    letterSpacing: -2,
+    marginTop: 14,
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 12,
+  },
+  estRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 },
+  estLine: { width: 34, height: StyleSheet.hairlineWidth, backgroundColor: theme.brass },
+  subtitle: {
+    fontFamily: theme.fontMono,
+    fontSize: 12,
+    color: theme.brass,
+    letterSpacing: 5,
+  },
+  motto: {
+    fontFamily: theme.fontDisplayItalic,
+    fontSize: 14,
+    color: theme.boneMuted,
+    marginTop: 18,
+  },
   actions: { gap: 12 },
-  btn: { padding: 17, borderRadius: 16, alignItems: 'center' },
-  primary: { backgroundColor: theme.brass },
-  primaryText: { fontFamily: theme.fontUIBold, fontSize: 17, color: theme.feltDeep },
-  secondary: { backgroundColor: theme.boneFaint, borderWidth: 1, borderColor: theme.line },
-  secondaryText: { fontFamily: theme.fontUISemi, fontSize: 15, color: theme.bone },
   footer: {
     fontFamily: theme.fontUI,
     fontSize: 11,
     color: theme.boneMuted,
     textAlign: 'center',
-    paddingBottom: 10,
+    paddingBottom: 8,
     lineHeight: 16,
+    paddingHorizontal: 10,
   },
 });
