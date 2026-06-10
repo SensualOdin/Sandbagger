@@ -7,3 +7,6 @@ export const holeEntered = (scores: Scores, hole: number, ids: ID[]): boolean =>
 
 export const zeroNet = (ids: ID[]): Record<ID, number> =>
   Object.fromEntries(ids.map((id) => [id, 0]));
+
+/** Negation that never produces -0. */
+export const neg = (n: number): number => (n === 0 ? 0 : -n);

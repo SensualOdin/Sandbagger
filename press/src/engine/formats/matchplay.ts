@@ -1,5 +1,5 @@
 import type { FormatNets, Round, Scores } from '../types';
-import { playerIds } from '../util';
+import { neg, playerIds } from '../util';
 
 /** Heads-up match play: flat match value to whoever finishes holes-up. */
 export function scoreMatchplay(round: Round, scores: Scores): FormatNets {
@@ -12,5 +12,5 @@ export function scoreMatchplay(round: Round, scores: Scores): FormatNets {
     if (sa != null && sb != null) diff += sa < sb ? 1 : sb < sa ? -1 : 0;
   }
   const netA = Math.sign(diff) * matchValue;
-  return { net: { [a]: netA, [b]: -netA }, detail: { holesUp: diff } };
+  return { net: { [a]: netA, [b]: neg(netA) }, detail: { holesUp: diff } };
 }

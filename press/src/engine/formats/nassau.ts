@@ -1,5 +1,5 @@
 import type { FormatNets, ID, NassauLeg, Round, Scores } from '../types';
-import { playerIds } from '../util';
+import { neg, playerIds } from '../util';
 
 const LEGS: Record<NassauLeg | 'total', { start: number; end: number }> = {
   front: { start: 0, end: 9 },
@@ -57,5 +57,5 @@ export function scoreNassau(round: Round, scores: Scores): FormatNets {
     pressLog.push({ leg: mp.leg, startHole: mp.startHole, result: press.final, source: 'manual' });
   }
 
-  return { net: { [a]: netA, [b]: -netA }, detail: { legs, pressLog } };
+  return { net: { [a]: netA, [b]: neg(netA) }, detail: { legs, pressLog } };
 }
