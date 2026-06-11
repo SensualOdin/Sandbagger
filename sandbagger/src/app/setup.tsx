@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -23,6 +23,7 @@ import { Rule } from '@/components/Rule';
 import type { FormatConfig, FormatKey, JunkType, Player } from '@/engine/types';
 import { buildRound, defaultConfig, FORMAT_KEYS, FORMATS, formatAvailable, JUNK_TYPES } from '@/lib/formats';
 import { newId } from '@/lib/id';
+import { loadPresets, presetLabel, rememberPreset, type RoundPreset } from '@/lib/presets';
 import { useRoundStore } from '@/store/roundStore';
 import { BRASS_GRADIENT, theme } from '@/theme';
 
@@ -32,18 +33,28 @@ export default function Setup() {
   const startRound = useRoundStore((s) => s.startRound);
   const [players, setPlayers] = useState<Player[]>([mkPlayer(), mkPlayer()]);
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
-  const [format, setFormat] = useState<FormatKey>('skins');
+  const [formats, setFormats] = useState<FormatKey[]>(['skins']);
   const [config, setConfig] = useState<FormatConfig>(defaultConfig(players));
   const [useNet, setUseNet] = useState(false);
   const [junkEnabled, setJunkEnabled] = useState<JunkType[]>([]);
   const [junkValues, setJunkValues] = useState<Partial<Record<JunkType, number>>>({});
+  const [greenieCarryover, setGreenieCarryover] = useState(false);
   const [team1, setTeam1] = useState<string[]>([]);
+  const [presets, setPresets] = useState<RoundPreset[]>([]);
+
+  useEffect(() => {
+    loadPresets().then(setPresets);
+  }, []);
 
   const count = players.length;
-  const blocked = formatAvailable(format, count, numHoles);
+  // games that stop fitting the table deselect themselves
+  useEffect(() => {
+    setFormats((fs) => fs.filter((f) => !formatAvailable(f, count, numHoles)));
+  }, [count, numHoles]);
+
   const named = players.every((p) => p.name.trim().length > 0);
-  const vegasReady = format !== 'vegas' || team1.length === 2;
-  const canStart = !blocked && named && vegasReady;
+  const vegasReady = !formats.includes('vegas') || team1.length === 2;
+  const canStart = formats.length > 0 && named && vegasReady;
 
   const patch = <K extends keyof FormatConfig>(key: K, val: FormatConfig[K]) =>
     setConfig((c) => ({ ...c, [key]: val }));
@@ -56,6 +67,9 @@ export default function Setup() {
         p.id === id ? { ...p, handicapIndex: text === '' ? undefined : Number(text) || 0 } : p
       )
     );
+
+  const toggleFormat = (k: FormatKey) =>
+    setFormats((fs) => (fs.includes(k) ? fs.filter((x) => x !== k) : [...fs, k]));
 
   const toggleJunkType = (t: JunkType) => {
     setJunkEnabled((e) => (e.includes(t) ? e.filter((x) => x !== t) : [...e, t]));
@@ -70,27 +84,53 @@ export default function Setup() {
     setTeam1((t) => t.filter((x) => x !== id));
   };
 
+  const applyPreset = (p: RoundPreset) => {
+    setPlayers(p.players.map((x) => ({ id: newId(), name: x.name, handicapIndex: x.handicapIndex })));
+    setNumHoles(p.numHoles);
+    setFormats(p.formats);
+    setConfig(p.config);
+    setUseNet(p.useNet);
+    setJunkEnabled(p.junkEnabled);
+    setJunkValues(p.junkValues);
+    setGreenieCarryover(p.greenieCarryover);
+    setTeam1([]); // vegas teams are per-round picks
+  };
+
   const start = () => {
     const finalConfig: FormatConfig = { ...config };
-    if (format === 'vegas') {
+    if (formats.includes('vegas')) {
       const team2 = players.filter((p) => !team1.includes(p.id)).map((p) => p.id);
       finalConfig.vegas = { ...config.vegas!, teams: [team1, team2] };
     }
+    const preset: RoundPreset = {
+      label: '',
+      players: players.map((p) => ({ name: p.name.trim(), handicapIndex: p.handicapIndex })),
+      formats,
+      config: finalConfig,
+      numHoles,
+      useNet,
+      junkEnabled,
+      junkValues,
+      greenieCarryover,
+    };
+    preset.label = presetLabel(preset);
+    rememberPreset(preset);
     startRound(
       buildRound({
         players,
-        format,
+        formats,
         numHoles,
         config: finalConfig,
         useNetScoring: useNet,
         junkEnabled,
         junkValues,
+        greenieCarryover,
       })
     );
     router.replace('/play');
   };
 
-  const knobs = useMemo(() => {
+  const knobsFor = (format: FormatKey) => {
     switch (format) {
       case 'skins':
         return (
@@ -165,8 +205,26 @@ export default function Setup() {
           <Knob label="Point value" prefix="$" value={config.sixpoint!.pointValue} min={1}
             onChange={(v) => patch('sixpoint', { pointValue: v })} />
         );
+      case 'stableford':
+        return (
+          <>
+            <Knob label="Per point" prefix="$" value={config.stableford!.pointValue} min={1}
+              onChange={(v) => patch('stableford', { ...config.stableford!, pointValue: v })} />
+            <RowToggle label="Modified scoring (PGA)" value={config.stableford!.modified}
+              onChange={(v) => patch('stableford', { ...config.stableford!, modified: v })} />
+          </>
+        );
+      case 'aceyDeucey':
+        return (
+          <>
+            <Knob label="Ace (low) collects" prefix="$" value={config.aceyDeucey!.aceValue} min={1}
+              onChange={(v) => patch('aceyDeucey', { ...config.aceyDeucey!, aceValue: v })} />
+            <Knob label="Deuce (high) pays" prefix="$" value={config.aceyDeucey!.deuceValue} min={1}
+              onChange={(v) => patch('aceyDeucey', { ...config.aceyDeucey!, deuceValue: v })} />
+          </>
+        );
     }
-  }, [format, config, players, team1]);
+  };
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
@@ -182,6 +240,18 @@ export default function Setup() {
             <Text style={styles.kicker}>OPEN THE BOOK</Text>
             <Text style={styles.title}>New round</Text>
           </Animated.View>
+
+          {presets.length > 0 && (
+            <>
+              <Rule label="Quick start" />
+              <View style={styles.chips}>
+                {presets.map((p) => (
+                  <PillButton key={p.label} label={p.label} variant="dark"
+                    selectedColor={theme.brassDeep} onPress={() => applyPreset(p)} />
+                ))}
+              </View>
+            </>
+          )}
 
           <Rule label="Players" />
           <Animated.View entering={FadeInDown.delay(80).springify()}>
@@ -244,16 +314,19 @@ export default function Setup() {
             })}
           </View>
 
-          <Rule label="The game" />
+          <Rule label="The games · stack as many as you like" />
           <View style={styles.formats}>
             {FORMAT_KEYS.map((k) => {
               const f = FORMATS[k];
               const reason = formatAvailable(k, count, numHoles);
-              const sel = format === k;
+              const sel = formats.includes(k);
               const inner = (
                 <>
                   <View style={styles.formatHead}>
-                    <Text style={[styles.formatLabel, sel && styles.onBrass]}>{f.label}</Text>
+                    <Text style={[styles.formatLabel, sel && styles.onBrass]}>
+                      {sel ? '✓ ' : ''}
+                      {f.label}
+                    </Text>
                     <Text style={[styles.formatPlayers, sel ? styles.onBrass : null]}>
                       {f.min === f.max ? `${f.min}P` : `${f.min}–${f.max}P`}
                     </Text>
@@ -263,7 +336,7 @@ export default function Setup() {
                 </>
               );
               return (
-                <Pressable key={k} disabled={!!reason} onPress={() => setFormat(k)}>
+                <Pressable key={k} disabled={!!reason} onPress={() => toggleFormat(k)}>
                   {sel ? (
                     <LinearGradient colors={BRASS_GRADIENT} locations={[0, 0.6, 1]} style={styles.formatSel}>
                       {inner}
@@ -276,41 +349,52 @@ export default function Setup() {
             })}
           </View>
 
-          <Rule label="Stakes & house rules" />
-          <Card framed style={styles.knobCard}>{knobs}</Card>
-
-          {format !== 'bingoBangoBongo' && (
+          {formats.length > 0 && (
             <>
-              <Rule label="Junk · dots" />
-              <Card framed style={styles.knobCard}>
-                <View style={styles.chips}>
-                  {JUNK_TYPES.map((j) => (
-                    <PillButton
-                      key={j.type}
-                      label={j.label}
-                      selected={junkEnabled.includes(j.type)}
-                      selectedColor={j.type === 'snake' ? theme.wax : theme.up}
-                      onPress={() => toggleJunkType(j.type)}
-                    />
-                  ))}
-                </View>
-                {junkEnabled.map((t) => (
-                  <Knob
-                    key={t}
-                    label={
-                      t === 'snake'
-                        ? 'Snake pot per hole'
-                        : `${JUNK_TYPES.find((j) => j.type === t)!.label} value`
-                    }
-                    prefix="$"
-                    min={1}
-                    value={junkValues[t] ?? 1}
-                    onChange={(v) => setJunkValues((vals) => ({ ...vals, [t]: v }))}
-                  />
-                ))}
-              </Card>
+              <Rule label="Stakes & house rules" />
+              {formats.map((f) => (
+                <Card framed key={f} style={styles.knobCard}>
+                  <Text style={styles.knobTitle}>{FORMATS[f].label.toUpperCase()}</Text>
+                  {knobsFor(f)}
+                </Card>
+              ))}
             </>
           )}
+
+          <Rule label="Junk · dots" />
+          <Card framed style={styles.knobCard}>
+            <View style={styles.chips}>
+              {JUNK_TYPES.map((j) => (
+                <PillButton
+                  key={j.type}
+                  label={j.label}
+                  selected={junkEnabled.includes(j.type)}
+                  selectedColor={j.type === 'snake' ? theme.wax : theme.up}
+                  onPress={() => toggleJunkType(j.type)}
+                />
+              ))}
+            </View>
+            {junkEnabled.map((t) => (
+              <Knob
+                key={t}
+                label={
+                  t === 'snake'
+                    ? 'Snake pot per hole'
+                    : t === 'rabbit'
+                      ? 'Rabbit pot per hole'
+                      : `${JUNK_TYPES.find((j) => j.type === t)!.label} value`
+                }
+                prefix="$"
+                min={1}
+                value={junkValues[t] ?? 1}
+                onChange={(v) => setJunkValues((vals) => ({ ...vals, [t]: v }))}
+              />
+            ))}
+            {junkEnabled.includes('greenie') && (
+              <RowToggle label="Greenies carry over par 3s" value={greenieCarryover}
+                onChange={setGreenieCarryover} />
+            )}
+          </Card>
 
           <Card framed style={[styles.knobCard, styles.netCard]}>
             <RowToggle label="Net scoring (handicaps)" value={useNet} onChange={setUseNet} />
@@ -322,8 +406,8 @@ export default function Setup() {
                 ? 'Start round'
                 : !named
                   ? 'Name all players'
-                  : blocked
-                    ? 'Pick a valid game'
+                  : formats.length === 0
+                    ? 'Pick at least one game'
                     : 'Pick team 1 (2 players)'
             }
             disabled={!canStart}
@@ -434,7 +518,14 @@ const styles = StyleSheet.create({
   formatReason: { fontFamily: theme.fontUI, fontSize: 11, color: theme.down, marginTop: 5 },
   onBrass: { color: theme.brassInk },
   onBrassSoft: { color: 'rgba(36,27,8,0.7)' },
-  knobCard: { padding: 16, marginBottom: 8, gap: 4 },
+  knobCard: { padding: 16, marginBottom: 10, gap: 4 },
+  knobTitle: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 10,
+    letterSpacing: 3,
+    color: theme.brassDeep,
+    marginBottom: 6,
+  },
   netCard: { marginTop: 14 },
   hint: { fontFamily: theme.fontDisplayItalic, fontSize: 12, color: theme.inkSoft, marginTop: 6, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 },

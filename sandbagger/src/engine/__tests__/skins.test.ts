@@ -17,7 +17,7 @@ const scores = scoresFrom({
 
 const skinsRound = (over: Partial<Round>, value = 5, carryover = true, valueMode: 'perPlayer' | 'totalPot' = 'perPlayer') =>
   mkRound({
-    format: 'skins',
+    formats: ['skins'],
     config: { skins: { value, carryover, valueMode } },
     numHoles: 9,
     players,

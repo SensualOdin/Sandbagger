@@ -56,7 +56,10 @@ export default function History() {
                 <Card framed style={styles.row}>
                   <View style={styles.rowLeft}>
                     <Text style={styles.format}>
-                      {FORMATS[item.format as FormatKey]?.label ?? item.format} · {item.numHoles}
+                      {item.formats
+                        .map((f) => FORMATS[f as FormatKey]?.label ?? f)
+                        .join(' + ')}{' '}
+                      · {item.numHoles}
                     </Text>
                     <Text style={styles.players} numberOfLines={1}>
                       {item.playerNames.join(', ')}
@@ -74,6 +77,7 @@ export default function History() {
           )}
         />
       )}
+      <Plaque kind="ghost" label="The Books · career ledger" onPress={() => router.push('/stats')} style={styles.backBtn} />
       <Plaque kind="ghost" label="← Back" onPress={() => router.back()} style={styles.backBtn} />
     </SafeAreaView>
   );

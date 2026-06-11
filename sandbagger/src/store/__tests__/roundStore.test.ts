@@ -15,7 +15,7 @@ function harness() {
 
 const baseRound = () =>
   mkRound({
-    format: 'skins',
+    formats: ['skins'],
     config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
   });
 

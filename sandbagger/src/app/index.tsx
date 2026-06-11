@@ -54,7 +54,7 @@ export default function Home() {
           <Animated.View entering={FadeInDown.delay(380).springify()}>
             <Plaque
               kind="ghost"
-              label={`Resume ${FORMATS[active.format].label} · ${holesEntered}/${active.numHoles} holes`}
+              label={`Resume ${active.formats.map((f) => FORMATS[f].label).join(' + ')} · ${holesEntered}/${active.numHoles} holes`}
               onPress={() => router.push('/play')}
             />
           </Animated.View>
@@ -64,7 +64,7 @@ export default function Home() {
           <Animated.View entering={FadeInDown.delay(380).springify()}>
             <Plaque
               kind="ghost"
-              label={`Finish settling ${FORMATS[unsettled.format].label}`}
+              label={`Finish settling ${unsettled.formats.map((f) => FORMATS[f].label).join(' + ')}`}
               onPress={() => router.push('/settle')}
             />
           </Animated.View>

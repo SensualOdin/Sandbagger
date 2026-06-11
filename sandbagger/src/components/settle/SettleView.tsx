@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Card } from '@/components/Card';
 import { Rule } from '@/components/Rule';
 import { TicketEdge } from '@/components/TicketEdge';
-import type { Round, RoundResult } from '@/engine/types';
+import type { FormatKey, Round, RoundResult } from '@/engine/types';
 import { FORMATS } from '@/lib/formats';
 import { fmtMoney, theme } from '@/theme';
 
@@ -31,6 +31,12 @@ export function SettleView({ round, result }: SettleViewProps) {
   const name = (id: string) => round.players.find((p) => p.id === id)?.name ?? id;
   const ranked = [...result.perPlayer].sort((a, b) => b.total - a.total);
   const hasJunk = result.perPlayer.some((p) => p.junkNet !== 0);
+  const showSplit = hasJunk || round.formats.length > 1;
+  const splitLine = (r: (typeof result.perPlayer)[number]) =>
+    [
+      ...round.formats.map((f) => `${FORMATS[f].label.toLowerCase()} ${fmtMoney(r.byFormat[f] ?? 0)}`),
+      ...(hasJunk ? [`dots ${fmtMoney(r.junkNet)}`] : []),
+    ].join(' · ');
 
   return (
     <View>
@@ -38,8 +44,8 @@ export function SettleView({ round, result }: SettleViewProps) {
         <Text style={styles.kicker}>✦ THE NIGHT&apos;S RECEIPT ✦</Text>
         <Text style={styles.title}>The Damage</Text>
         <Text style={styles.sub}>
-          {FORMATS[round.format].label.toUpperCase()} · {round.numHoles} HOLES
-          {round.useNetScoring ? ' · NET' : ''}
+          {round.formats.map((f) => FORMATS[f].label.toUpperCase()).join(' + ')} ·{' '}
+          {round.numHoles} HOLES{round.useNetScoring ? ' · NET' : ''}
         </Text>
       </View>
 
@@ -55,11 +61,7 @@ export function SettleView({ round, result }: SettleViewProps) {
               <Text style={styles.rank}>{String(i + 1).padStart(2, '0')}</Text>
               <View style={styles.ledgerName}>
                 <Text style={styles.playerName}>{name(r.playerId)}</Text>
-                {hasJunk && (
-                  <Text style={styles.split}>
-                    game {fmtMoney(r.formatNet)} · dots {fmtMoney(r.junkNet)}
-                  </Text>
-                )}
+                {showSplit && <Text style={styles.split}>{splitLine(r)}</Text>}
               </View>
               <Leader />
               <Text
@@ -91,7 +93,15 @@ export function SettleView({ round, result }: SettleViewProps) {
             ))
           )}
 
-          <Breakdown round={round} result={result} name={name} />
+          {round.formats.map((f) => (
+            <FormatBreakdown
+              key={f}
+              format={f}
+              round={round}
+              detail={result.details[f] ?? {}}
+              name={name}
+            />
+          ))}
 
           <Text style={styles.stamp}>TRUST THE CARD, NOT THE PLAYER · SANDBAGGER</Text>
         </View>
@@ -101,18 +111,24 @@ export function SettleView({ round, result }: SettleViewProps) {
   );
 }
 
-function Breakdown({
+function FormatBreakdown({
+  format,
   round,
-  result,
+  detail,
   name,
-}: SettleViewProps & { name: (id: string) => string }) {
-  const d = result.detail;
+}: {
+  format: FormatKey;
+  round: Round;
+  detail: Record<string, unknown>;
+  name: (id: string) => string;
+}) {
+  const d = detail;
 
-  if (round.format === 'wolf' || round.format === 'sixpoint' || round.format === 'bingoBangoBongo') {
+  if (format === 'wolf' || format === 'sixpoint' || format === 'bingoBangoBongo' || format === 'stableford') {
     const pts = d.pts as Record<string, number>;
     return (
       <>
-        <Rule label="Points" variant="card" />
+        <Rule label={`${FORMATS[format].label} points`} variant="card" />
         {round.players.map((p) => (
           <View key={p.id} style={styles.ledgerRow}>
             <Text style={styles.playerName}>{p.name}</Text>
@@ -127,7 +143,7 @@ function Breakdown({
     );
   }
 
-  if (round.format === 'nassau') {
+  if (format === 'nassau') {
     const legs = d.legs as Record<string, number>;
     const pressLog = d.pressLog as { leg: string; startHole: number; result: number; source: string }[];
     const [a, b] = round.players;
@@ -162,7 +178,7 @@ function Breakdown({
     );
   }
 
-  if (round.format === 'skins') {
+  if (format === 'skins') {
     const skinsWon = d.skinsWon as Record<string, number>;
     return (
       <>
@@ -178,7 +194,7 @@ function Breakdown({
     );
   }
 
-  if (round.format === 'vegas') {
+  if (format === 'vegas') {
     const points = d.points as number;
     const [t1, t2] = round.config.vegas!.teams;
     const winners = points > 0 ? t1 : t2;
@@ -195,7 +211,7 @@ function Breakdown({
     );
   }
 
-  if (round.format === 'matchplay') {
+  if (format === 'matchplay') {
     const up = d.holesUp as number;
     return (
       <>
@@ -215,7 +231,26 @@ function Breakdown({
     );
   }
 
-  if (round.format === 'strokeplay') {
+  if (format === 'aceyDeucey') {
+    const aces = d.aces as Record<string, number>;
+    const deuces = d.deuces as Record<string, number>;
+    return (
+      <>
+        <Rule label="Aces · Deuces" variant="card" />
+        {round.players.map((p) => (
+          <View key={p.id} style={styles.ledgerRow}>
+            <Text style={styles.playerName}>{p.name}</Text>
+            <Leader />
+            <Text style={styles.txMoney}>
+              {aces[p.id] ?? 0} · {deuces[p.id] ?? 0}
+            </Text>
+          </View>
+        ))}
+      </>
+    );
+  }
+
+  if (format === 'strokeplay') {
     const totals = d.totals as Record<string, number>;
     return (
       <>

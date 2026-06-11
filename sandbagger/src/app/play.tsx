@@ -57,7 +57,7 @@ export default function Play() {
 
   const par = round.holes[hole].par;
   const ids = round.players.map((p) => p.id);
-  const wolfId = round.format === 'wolf' ? ids[hole % ids.length] : null;
+  const wolfId = round.formats.includes('wolf') ? ids[hole % ids.length] : null;
   const snakeId = round.junk.config.enabled.includes('snake')
     ? snakeHolder(round.junk.events)
     : null;
@@ -147,11 +147,11 @@ export default function Play() {
           </Pressable>
         </View>
 
-        {round.format === 'wolf' && (
+        {round.formats.includes('wolf') && (
           <WolfPicker round={round} hole={hole} onPick={(d) => setWolf(hole, d)} />
         )}
 
-        {round.format === 'nassau' && (
+        {round.formats.includes('nassau') && (
           <Pressable style={styles.pressBtn} onPress={confirmPress}>
             <Text style={styles.pressBtnText}>
               ⚡ PRESS THE {pressLeg.toUpperCase()}

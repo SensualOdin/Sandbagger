@@ -10,7 +10,7 @@ const four = [
 
 const vegasRound = (scores: ReturnType<typeof scoresFrom>, flipBirds = true) =>
   mkRound({
-    format: 'vegas',
+    formats: ['vegas'],
     config: { vegas: { pointValue: 1, flipBirds, teams: [['A', 'B'], ['C', 'D']] } },
     players: four,
     scores,

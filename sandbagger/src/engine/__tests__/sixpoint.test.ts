@@ -17,7 +17,7 @@ describe('scoreSixpoint', () => {
       4: { A: 4, B: 4, C: 4 }, // all tie: 2-2-2
     });
     const round = mkRound({
-      format: 'sixpoint',
+      formats: ['sixpoint'],
       config: { sixpoint: { pointValue: 1 } },
       players: three,
       scores,
@@ -31,7 +31,7 @@ describe('scoreSixpoint', () => {
   it('skips unentered holes', () => {
     const scores = scoresFrom({ 0: { A: 3, B: 4 } }); // C missing
     const round = mkRound({
-      format: 'sixpoint',
+      formats: ['sixpoint'],
       config: { sixpoint: { pointValue: 1 } },
       players: three,
       scores,

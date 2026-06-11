@@ -22,26 +22,57 @@ const mkPlayers = (n: number): Player[] =>
   }));
 
 interface Fixture {
-  format: FormatKey;
+  formats: FormatKey[];
   playerCount: number;
   config: (players: Player[]) => FormatConfig;
 }
 
 const FIXTURES: Fixture[] = [
-  { format: 'skins', playerCount: 4, config: () => ({ skins: { value: 5, carryover: true, valueMode: 'perPlayer' } }) },
-  { format: 'skins', playerCount: 3, config: () => ({ skins: { value: 6, carryover: false, valueMode: 'totalPot' } }) },
-  { format: 'nassau', playerCount: 2, config: () => ({ nassau: { perLeg: 10, autoPress: true, pressTrigger: 2 } }) },
-  { format: 'wolf', playerCount: 4, config: () => ({ wolf: { pointValue: 2, loneMult: 2, blindMult: 3 } }) },
-  { format: 'wolf', playerCount: 5, config: () => ({ wolf: { pointValue: 1, loneMult: 3, blindMult: 4 } }) },
-  { format: 'wolf', playerCount: 3, config: () => ({ wolf: { pointValue: 1, loneMult: 2, blindMult: 3 } }) },
-  { format: 'vegas', playerCount: 4, config: (p) => ({ vegas: { pointValue: 1, flipBirds: true, teams: [[p[0].id, p[1].id], [p[2].id, p[3].id]] } }) },
-  { format: 'bingoBangoBongo', playerCount: 4, config: () => ({ bingoBangoBongo: { pointValue: 1 } }) },
-  { format: 'matchplay', playerCount: 2, config: () => ({ matchplay: { matchValue: 20 } }) },
-  { format: 'strokeplay', playerCount: 4, config: () => ({ strokeplay: { perStroke: 1 } }) },
-  { format: 'sixpoint', playerCount: 3, config: () => ({ sixpoint: { pointValue: 2 } }) },
+  { formats: ['skins'], playerCount: 4, config: () => ({ skins: { value: 5, carryover: true, valueMode: 'perPlayer' } }) },
+  { formats: ['skins'], playerCount: 3, config: () => ({ skins: { value: 6, carryover: false, valueMode: 'totalPot' } }) },
+  { formats: ['nassau'], playerCount: 2, config: () => ({ nassau: { perLeg: 10, autoPress: true, pressTrigger: 2 } }) },
+  { formats: ['wolf'], playerCount: 4, config: () => ({ wolf: { pointValue: 2, loneMult: 2, blindMult: 3 } }) },
+  { formats: ['wolf'], playerCount: 5, config: () => ({ wolf: { pointValue: 1, loneMult: 3, blindMult: 4 } }) },
+  { formats: ['wolf'], playerCount: 3, config: () => ({ wolf: { pointValue: 1, loneMult: 2, blindMult: 3 } }) },
+  { formats: ['vegas'], playerCount: 4, config: (p) => ({ vegas: { pointValue: 1, flipBirds: true, teams: [[p[0].id, p[1].id], [p[2].id, p[3].id]] } }) },
+  { formats: ['bingoBangoBongo'], playerCount: 4, config: () => ({ bingoBangoBongo: { pointValue: 1 } }) },
+  { formats: ['matchplay'], playerCount: 2, config: () => ({ matchplay: { matchValue: 20 } }) },
+  { formats: ['strokeplay'], playerCount: 4, config: () => ({ strokeplay: { perStroke: 1 } }) },
+  { formats: ['sixpoint'], playerCount: 3, config: () => ({ sixpoint: { pointValue: 2 } }) },
+  { formats: ['stableford'], playerCount: 4, config: () => ({ stableford: { pointValue: 1, modified: false } }) },
+  { formats: ['stableford'], playerCount: 3, config: () => ({ stableford: { pointValue: 2, modified: true } }) },
+  { formats: ['aceyDeucey'], playerCount: 4, config: () => ({ aceyDeucey: { aceValue: 2, deuceValue: 1 } }) },
+  // multi-game stacks: the whole point of the refactor
+  {
+    formats: ['skins', 'strokeplay', 'stableford'],
+    playerCount: 4,
+    config: () => ({
+      skins: { value: 5, carryover: true, valueMode: 'perPlayer' },
+      strokeplay: { perStroke: 1 },
+      stableford: { pointValue: 1, modified: false },
+    }),
+  },
+  {
+    formats: ['nassau', 'matchplay', 'skins'],
+    playerCount: 2,
+    config: () => ({
+      nassau: { perLeg: 10, autoPress: true, pressTrigger: 2 },
+      matchplay: { matchValue: 20 },
+      skins: { value: 2, carryover: false, valueMode: 'perPlayer' },
+    }),
+  },
+  {
+    formats: ['wolf', 'vegas', 'aceyDeucey'],
+    playerCount: 4,
+    config: (p) => ({
+      wolf: { pointValue: 1, loneMult: 2, blindMult: 3 },
+      vegas: { pointValue: 1, flipBirds: true, teams: [[p[0].id, p[1].id], [p[2].id, p[3].id]] },
+      aceyDeucey: { aceValue: 1, deuceValue: 1 },
+    }),
+  },
 ];
 
-const JUNK_TYPES = ['greenie', 'sandie', 'barkie', 'birdie', 'snake'] as const;
+const JUNK_TYPES = ['greenie', 'sandie', 'barkie', 'birdie', 'snake', 'arnie', 'ferret'] as const;
 
 function randomRound(fixture: Fixture, rnd: () => number): Round {
   const players = mkPlayers(fixture.playerCount);
@@ -54,7 +85,7 @@ function randomRound(fixture: Fixture, rnd: () => number): Round {
     if (rnd() < 0.15) continue; // some holes unentered (partial rounds must stay zero-sum)
     scores[h] = {};
     for (const p of players) scores[h][p.id] = 2 + Math.floor(rnd() * 7);
-    if (fixture.format === 'wolf') {
+    if (fixture.formats.includes('wolf')) {
       const r = rnd();
       const wolfId = players[h % players.length].id;
       const partners = players.filter((p) => p.id !== wolfId);
@@ -65,7 +96,7 @@ function randomRound(fixture: Fixture, rnd: () => number): Round {
             ? { mode: 'lone' }
             : { mode: 'blind' };
     }
-    if (fixture.format === 'bingoBangoBongo') {
+    if (fixture.formats.includes('bingoBangoBongo')) {
       for (const t of ['bingo', 'bango', 'bongo'] as const) {
         if (rnd() < 0.8) events.push({ hole: h, type: t, playerId: players[Math.floor(rnd() * players.length)].id });
       }
@@ -80,15 +111,15 @@ function randomRound(fixture: Fixture, rnd: () => number): Round {
   }
 
   return mkRound({
-    format: fixture.format,
+    formats: fixture.formats,
     config: fixture.config(players),
     players,
     scores,
     wolf,
     useNetScoring: rnd() < 0.5,
-    presses: fixture.format === 'nassau' && rnd() < 0.5 ? [{ leg: 'back', startHole: 12 }] : [],
+    presses: fixture.formats.includes('nassau') && rnd() < 0.5 ? [{ leg: 'back', startHole: 12 }] : [],
     junk: {
-      config: { enabled: ['greenie', 'sandie', 'barkie', 'birdie', 'snake'], values: { greenie: 1, sandie: 1, barkie: 2, birdie: 1, snake: 2 } },
+      config: { enabled: ['greenie', 'sandie', 'barkie', 'birdie', 'snake', 'rabbit', 'arnie', 'ferret'], values: { greenie: 1, sandie: 1, barkie: 2, birdie: 1, snake: 2, rabbit: 1, arnie: 1, ferret: 2 }, greenieCarryover: true },
       events,
     },
   });
@@ -96,7 +127,7 @@ function randomRound(fixture: Fixture, rnd: () => number): Round {
 
 describe('zero-sum property', () => {
   for (const fixture of FIXTURES) {
-    it(`${fixture.format} (${fixture.playerCount}p) is always zero-sum and money is conserved`, () => {
+    it(`${fixture.formats.join('+')} (${fixture.playerCount}p) is always zero-sum and money is conserved`, () => {
       const rnd = mulberry32(42);
       for (let iter = 0; iter < 50; iter++) {
         const round = randomRound(fixture, rnd);

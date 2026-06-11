@@ -14,7 +14,9 @@ export type FormatKey =
   | 'bingoBangoBongo'
   | 'matchplay'
   | 'strokeplay'
-  | 'sixpoint';
+  | 'sixpoint'
+  | 'stableford'
+  | 'aceyDeucey';
 
 export interface HoleInfo {
   par: number;
@@ -57,6 +59,15 @@ export interface StrokeplayConfig {
 export interface SixpointConfig {
   pointValue: number;
 }
+export interface StablefordConfig {
+  pointValue: number;
+  /** Modified (PGA) scoring: eagle +5, birdie +2, par 0, bogey -1, double+ -3. */
+  modified: boolean;
+}
+export interface AceyDeuceyConfig {
+  aceValue: number;
+  deuceValue: number;
+}
 
 export interface FormatConfig {
   skins?: SkinsConfig;
@@ -67,6 +78,8 @@ export interface FormatConfig {
   matchplay?: MatchplayConfig;
   strokeplay?: StrokeplayConfig;
   sixpoint?: SixpointConfig;
+  stableford?: StablefordConfig;
+  aceyDeucey?: AceyDeuceyConfig;
 }
 
 export interface WolfDecision {
@@ -89,7 +102,12 @@ export type JunkType =
   | 'birdie'
   | 'eagle'
   | 'polie'
+  | 'arnie'
+  | 'hogan'
+  | 'ferret'
+  | 'goldenFerret'
   | 'snake'
+  | 'rabbit'
   | 'bingo'
   | 'bango'
   | 'bongo';
@@ -102,6 +120,8 @@ export interface JunkEvent {
 export interface JunkConfig {
   enabled: JunkType[];
   values: Partial<Record<JunkType, number>>;
+  /** Unwon par-3 greenies roll their value into the next par 3. */
+  greenieCarryover?: boolean;
 }
 
 export interface Round {
@@ -111,7 +131,8 @@ export interface Round {
   numHoles: 9 | 18;
   holes: HoleInfo[];
   players: Player[];
-  format: FormatKey;
+  /** Every game running on this round — nets are summed across all of them. */
+  formats: FormatKey[];
   config: FormatConfig;
   useNetScoring: boolean;
   scores: Scores;
@@ -128,6 +149,8 @@ export interface Transaction {
 }
 export interface PlayerNet {
   playerId: ID;
+  /** Net per game, keyed by format. */
+  byFormat: Partial<Record<FormatKey, number>>;
   formatNet: number;
   junkNet: number;
   total: number;
@@ -135,7 +158,8 @@ export interface PlayerNet {
 export interface RoundResult {
   perPlayer: PlayerNet[];
   transactions: Transaction[];
-  detail: Record<string, unknown>;
+  /** Per-format detail payloads (press logs, points, skins won...). */
+  details: Partial<Record<FormatKey, Record<string, unknown>>>;
 }
 export type FormatNets = {
   net: Record<ID, number>;

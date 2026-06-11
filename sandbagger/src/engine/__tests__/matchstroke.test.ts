@@ -12,7 +12,7 @@ describe('scoreMatchplay', () => {
       3: { A: 5, B: 4 },
       4: { A: 4, B: 4 },
     });
-    const round = mkRound({ format: 'matchplay', config: { matchplay: { matchValue: 20 } }, scores });
+    const round = mkRound({ formats: ['matchplay'], config: { matchplay: { matchValue: 20 } }, scores });
     const { net, detail } = scoreMatchplay(round, scores);
     expect(detail.holesUp).toBe(2);
     expect(net).toEqual({ A: 20, B: -20 });
@@ -21,7 +21,7 @@ describe('scoreMatchplay', () => {
 
   it('pays nothing when all square', () => {
     const scores = scoresFrom({ 0: { A: 3, B: 4 }, 1: { A: 4, B: 3 } });
-    const round = mkRound({ format: 'matchplay', config: { matchplay: { matchValue: 20 } }, scores });
+    const round = mkRound({ formats: ['matchplay'], config: { matchplay: { matchValue: 20 } }, scores });
     expect(scoreMatchplay(round, scores).net).toEqual({ A: 0, B: 0 });
   });
 });
@@ -39,7 +39,7 @@ describe('scoreStrokeplay', () => {
       1: { A: 4, B: 4, C: 5 },
     });
     const round = mkRound({
-      format: 'strokeplay',
+      formats: ['strokeplay'],
       config: { strokeplay: { perStroke: 1 } },
       players: three,
       scores,
@@ -56,7 +56,7 @@ describe('scoreStrokeplay', () => {
       1: { A: 1, B: 9 }, // C missing: excluded for all
     });
     const round = mkRound({
-      format: 'strokeplay',
+      formats: ['strokeplay'],
       config: { strokeplay: { perStroke: 1 } },
       players: three,
       scores,

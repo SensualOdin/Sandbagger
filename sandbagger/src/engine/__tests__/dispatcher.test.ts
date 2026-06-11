@@ -3,7 +3,7 @@ import { mkRound, scoresFrom } from '../testkit';
 import type { FormatKey } from '../types';
 
 const ALL_FORMATS: FormatKey[] = [
-  'skins', 'nassau', 'wolf', 'vegas', 'bingoBangoBongo', 'matchplay', 'strokeplay', 'sixpoint',
+  'skins', 'nassau', 'wolf', 'vegas', 'bingoBangoBongo', 'matchplay', 'strokeplay', 'sixpoint', 'stableford', 'aceyDeucey',
 ];
 
 describe('FORMAT_FNS', () => {
@@ -16,7 +16,7 @@ describe('computeResults', () => {
   it('combines format and junk nets and settles the total', () => {
     const scores = scoresFrom({ 0: { A: 4, B: 5 } });
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       scores,
       junk: {
@@ -36,7 +36,7 @@ describe('computeResults', () => {
     // B has handicap 18: a stroke on every hole. Gross tie -> B net-wins every hole.
     const scores = scoresFrom({ 0: { A: 4, B: 4 } });
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       useNetScoring: true,
       players: [

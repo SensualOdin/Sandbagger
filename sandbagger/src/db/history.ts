@@ -6,7 +6,7 @@ import { fmtMoney } from '@/theme';
 export interface HistoryRow {
   id: string;
   createdAt: string;
-  format: string;
+  formats: string[];
   numHoles: number;
   playerNames: string[];
   /** e.g. "Bo +$24" — biggest winner for the list view. */
@@ -44,7 +44,7 @@ export function saveRound(round: Round, result: RoundResult): void {
      VALUES (?, ?, ?, ?, ?, ?, ?);`,
     round.id,
     round.createdAt,
-    round.format,
+    round.formats.join('+'),
     round.numHoles,
     JSON.stringify(names),
     topLine,
@@ -65,7 +65,7 @@ export function listRounds(): HistoryRow[] {
   return rows.map((r) => ({
     id: r.id,
     createdAt: r.created_at,
-    format: r.format,
+    formats: r.format.split('+'),
     numHoles: r.num_holes,
     playerNames: JSON.parse(r.player_names),
     topLine: r.top_line,
@@ -77,7 +77,27 @@ export function getRound(id: string): { round: Round; result: RoundResult } | nu
     `SELECT payload FROM rounds WHERE id = ?;`,
     id
   );
-  return row ? JSON.parse(row.payload) : null;
+  if (!row) return null;
+  const saved = JSON.parse(row.payload);
+  // rounds saved before multi-game support carried a single `format`
+  if (saved.round.format && !saved.round.formats) {
+    saved.round.formats = [saved.round.format];
+  }
+  return saved;
+}
+
+/** Every saved round with its results — the raw material for the books. */
+export function getAllRounds(): { round: Round; result: RoundResult }[] {
+  const rows = getDb().getAllSync<{ payload: string }>(
+    `SELECT payload FROM rounds ORDER BY created_at ASC;`
+  );
+  return rows.map((r) => {
+    const saved = JSON.parse(r.payload);
+    if (saved.round.format && !saved.round.formats) {
+      saved.round.formats = [saved.round.format];
+    }
+    return saved;
+  });
 }
 
 export function deleteRound(id: string): void {

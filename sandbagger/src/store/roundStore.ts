@@ -27,6 +27,15 @@ export const useRoundStore = create<RoundStore>()(
       name: 'press-active-round',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({ round: s.round }),
+      version: 1,
+      // rounds persisted before multi-game support carried a single `format`
+      migrate: (persisted) => {
+        const p = persisted as { round: (RoundState['round'] & { format?: string }) | null };
+        if (p?.round?.format && !p.round.formats) {
+          p.round.formats = [p.round.format as never];
+        }
+        return p as never;
+      },
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     }
   )

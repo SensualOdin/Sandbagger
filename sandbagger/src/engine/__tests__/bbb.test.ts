@@ -10,7 +10,7 @@ const three = [
 describe('scoreBBB', () => {
   it('pays each point from every other player', () => {
     const round = mkRound({
-      format: 'bingoBangoBongo',
+      formats: ['bingoBangoBongo'],
       config: { bingoBangoBongo: { pointValue: 2 } },
       players: three,
       junk: {
@@ -30,7 +30,7 @@ describe('scoreBBB', () => {
 
   it('ignores non-BBB junk events', () => {
     const round = mkRound({
-      format: 'bingoBangoBongo',
+      formats: ['bingoBangoBongo'],
       config: { bingoBangoBongo: { pointValue: 2 } },
       players: three,
       junk: {

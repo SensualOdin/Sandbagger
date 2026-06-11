@@ -10,7 +10,7 @@ const three = [
 describe('scoreJunk', () => {
   it('pays dots from every other player', () => {
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       players: three,
       junk: {
@@ -25,7 +25,7 @@ describe('scoreJunk', () => {
 
   it('ignores events whose type is not enabled', () => {
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       players: three,
       junk: {
@@ -40,7 +40,7 @@ describe('scoreJunk', () => {
 describe('snake (hot potato)', () => {
   const snakeRound = (events: { hole: number; playerId: string }[], scores: Record<number, Record<string, number>>) =>
     mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       players: three,
       scores,

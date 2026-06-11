@@ -50,7 +50,7 @@ describe('strokesReceived', () => {
 describe('netScores', () => {
   it('returns gross unchanged when net scoring is off', () => {
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       scores: { 0: { A: 5, B: 4 } },
     });
@@ -59,7 +59,7 @@ describe('netScores', () => {
 
   it('subtracts allocated strokes; absent holes stay absent', () => {
     const round = mkRound({
-      format: 'skins',
+      formats: ['skins'],
       config: { skins: { value: 5, carryover: true, valueMode: 'perPlayer' } },
       useNetScoring: true,
       players: [

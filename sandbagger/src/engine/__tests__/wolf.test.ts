@@ -17,7 +17,7 @@ describe('scoreWolf', () => {
       3: { A: 4, B: 4, C: 5, D: 4 }, // wolf D + partner A: best balls tie 4-4
     });
     const round = mkRound({
-      format: 'wolf',
+      formats: ['wolf'],
       config: { wolf: { pointValue: 1, loneMult: 2, blindMult: 3 } },
       players: four,
       scores,
@@ -37,7 +37,7 @@ describe('scoreWolf', () => {
   it('splits unequal partner teams zero-sum (3-player 2v1)', () => {
     const scores = scoresFrom({ 0: { A: 4, B: 3, C: 5 } });
     const round = mkRound({
-      format: 'wolf',
+      formats: ['wolf'],
       config: { wolf: { pointValue: 1, loneMult: 2, blindMult: 3 } },
       players: four.slice(0, 3),
       scores,
@@ -51,7 +51,7 @@ describe('scoreWolf', () => {
   it('skips holes without a decision or scores', () => {
     const scores = scoresFrom({ 0: { A: 3, B: 5, C: 4, D: 4 } });
     const round = mkRound({
-      format: 'wolf',
+      formats: ['wolf'],
       config: { wolf: { pointValue: 1, loneMult: 2, blindMult: 3 } },
       players: four,
       scores,
@@ -64,7 +64,7 @@ describe('scoreWolf', () => {
   it('applies pointValue to points', () => {
     const scores = scoresFrom({ 0: { A: 3, B: 5, C: 4, D: 4 } });
     const round = mkRound({
-      format: 'wolf',
+      formats: ['wolf'],
       config: { wolf: { pointValue: 5, loneMult: 2, blindMult: 3 } },
       players: four,
       scores,

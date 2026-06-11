@@ -18,6 +18,8 @@ export const FORMATS: Record<FormatKey, FormatMeta> = {
   matchplay: { label: 'Match Play', blurb: 'Holes up wins the match. Heads-up.', min: 2, max: 2 },
   strokeplay: { label: 'Stroke Play', blurb: 'Every stroke counts. Pairwise payouts.', min: 2, max: 6 },
   sixpoint: { label: 'Six-Point', blurb: '6 points a hole split by rank. Threesome classic.', min: 3, max: 3 },
+  stableford: { label: 'Stableford', blurb: 'Points for birdies, nothing for blowups.', min: 2, max: 6 },
+  aceyDeucey: { label: 'Acey Deucey', blurb: 'Low collects from everyone. High pays everyone.', min: 3, max: 6 },
 };
 
 export const FORMAT_KEYS = Object.keys(FORMATS) as FormatKey[];
@@ -31,6 +33,11 @@ export const JUNK_TYPES: { type: JunkType; label: string; hint: string }[] = [
   { type: 'birdie', label: 'Birdie', hint: 'one under par' },
   { type: 'eagle', label: 'Eagle', hint: 'two under par' },
   { type: 'polie', label: 'Polie', hint: 'putt longer than the flagstick' },
+  { type: 'arnie', label: 'Arnie', hint: 'par or better without touching the fairway' },
+  { type: 'hogan', label: 'Hogan', hint: 'fairway, green, one putt' },
+  { type: 'ferret', label: 'Ferret', hint: 'hole out from off the green' },
+  { type: 'goldenFerret', label: 'Golden Ferret', hint: 'hole out from the sand' },
+  { type: 'rabbit', label: 'Rabbit', hint: 'win a hole outright to take it — holder collects the pot' },
   { type: 'snake', label: 'Snake', hint: '3-putt holds it — pot grows every hole, holder pays at the end' },
 ];
 
@@ -47,6 +54,8 @@ export const defaultConfig = (players: Player[]): Required<FormatConfig> => ({
   matchplay: { matchValue: 10 },
   strokeplay: { perStroke: 1 },
   sixpoint: { pointValue: 1 },
+  stableford: { pointValue: 1, modified: false },
+  aceyDeucey: { aceValue: 1, deuceValue: 1 },
 });
 
 export function formatAvailable(key: FormatKey, playerCount: number, numHoles: number): string | null {
@@ -60,12 +69,13 @@ export function formatAvailable(key: FormatKey, playerCount: number, numHoles: n
 
 interface BuildRoundArgs {
   players: Player[];
-  format: FormatKey;
+  formats: FormatKey[];
   numHoles: 9 | 18;
   config: FormatConfig;
   useNetScoring: boolean;
   junkEnabled: JunkType[];
   junkValues: Partial<Record<JunkType, number>>;
+  greenieCarryover: boolean;
 }
 
 export function buildRound(args: BuildRoundArgs): Round {
@@ -75,13 +85,20 @@ export function buildRound(args: BuildRoundArgs): Round {
     numHoles: args.numHoles,
     holes: Array.from({ length: args.numHoles }, (_, i) => ({ par: 4, strokeIndex: i + 1 })),
     players: args.players,
-    format: args.format,
+    formats: args.formats,
     config: args.config,
     useNetScoring: args.useNetScoring,
     scores: {},
     wolf: {},
     presses: [],
-    junk: { config: { enabled: args.junkEnabled, values: args.junkValues }, events: [] },
+    junk: {
+      config: {
+        enabled: args.junkEnabled,
+        values: args.junkValues,
+        greenieCarryover: args.greenieCarryover,
+      },
+      events: [],
+    },
     status: 'active',
   };
 }

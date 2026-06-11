@@ -19,7 +19,7 @@ const scores: Scores = scoresFrom(
 
 const nassauRound = (autoPress: boolean, presses: { leg: 'front' | 'back'; startHole: number }[] = []) =>
   mkRound({
-    format: 'nassau',
+    formats: ['nassau'],
     config: { nassau: { perLeg: 10, autoPress, pressTrigger: 2 } },
     scores,
     presses,
@@ -57,7 +57,7 @@ describe('scoreNassau', () => {
       )
     );
     const round = mkRound({
-      format: 'nassau',
+      formats: ['nassau'],
       config: { nassau: { perLeg: 10, autoPress: true, pressTrigger: 1 } },
       scores: lateScores,
     });

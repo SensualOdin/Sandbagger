@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/Card';
 import { PillButton } from '@/components/PillButton';
-import { snakeHolder } from '@/engine/junk';
+import { rabbitHolder, snakeHolder } from '@/engine/junk';
 import type { JunkEvent, JunkType, Round } from '@/engine/types';
 import { JUNK_TYPES } from '@/lib/formats';
 import { theme } from '@/theme';
@@ -21,31 +21,33 @@ interface JunkBarProps {
 
 /** Dot rows for the current hole: junk types (or BBB dots) x player chips. */
 export function JunkBar({ round, hole, onToggle }: JunkBarProps) {
-  const rows =
-    round.format === 'bingoBangoBongo'
-      ? BBB_ROWS
-      : round.junk.config.enabled.map((t) => ({
-          type: t,
-          label: JUNK_TYPES.find((j) => j.type === t)?.label ?? t,
-        }));
+  const junkRows = round.junk.config.enabled.map((t) => ({
+    type: t,
+    label: JUNK_TYPES.find((j) => j.type === t)?.label ?? t,
+  }));
+  const rows = round.formats.includes('bingoBangoBongo') ? [...BBB_ROWS, ...junkRows] : junkRows;
   if (rows.length === 0) return null;
 
   const has = (type: JunkType, playerId: string) =>
     round.junk.events.some((e) => e.hole === hole && e.type === type && e.playerId === playerId);
 
-  const holderId = snakeHolder(round.junk.events);
-  const holderName = round.players.find((p) => p.id === holderId)?.name;
+  const pName = (id: string | null) => round.players.find((p) => p.id === id)?.name;
+  const snakeName = pName(snakeHolder(round.junk.events));
+  const rabbitName = pName(rabbitHolder(round));
 
   const rowLabel = (row: { type: JunkType; label: string }) =>
     row.type === 'snake'
-      ? `Snake 🐍 ${holderName ? `· ${holderName} has it` : '· nobody yet'}`
-      : row.label;
+      ? `Snake 🐍 ${snakeName ? `· ${snakeName} has it` : '· nobody yet'}`
+      : row.type === 'rabbit'
+        ? `Rabbit 🐰 ${rabbitName ? `· runs with ${rabbitName}` : '· uncaught'}`
+        : row.label;
 
   return (
     <Card framed style={styles.card}>
       {rows.map((row) => (
         <View key={row.type} style={styles.row}>
           <Text style={styles.label}>{rowLabel(row)}</Text>
+          {row.type !== 'rabbit' && (
           <View style={styles.chips}>
             {round.players.map((p) => (
               <PillButton
@@ -57,6 +59,7 @@ export function JunkBar({ round, hole, onToggle }: JunkBarProps) {
               />
             ))}
           </View>
+          )}
         </View>
       ))}
     </Card>

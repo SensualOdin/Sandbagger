@@ -4,7 +4,7 @@ export const mkHoles = (n: number, par = 4): HoleInfo[] =>
   Array.from({ length: n }, (_, i) => ({ par, strokeIndex: i + 1 }));
 
 export function mkRound(
-  over: Partial<Round> & { format: FormatKey; config: FormatConfig }
+  over: Partial<Round> & { formats: FormatKey[]; config: FormatConfig }
 ): Round {
   const numHoles = over.numHoles ?? 18;
   return {
