@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { theme } from '@/theme';
 
@@ -8,6 +8,8 @@ interface PillButtonProps {
   selected?: boolean;
   disabled?: boolean;
   onPress: () => void;
+  /** Renders a small "?" tail that opens an explanation instead of toggling. */
+  onInfo?: () => void;
   /** 'light' renders on bone cards, 'dark' on the felt background. */
   variant?: 'light' | 'dark';
   selectedColor?: string;
@@ -20,13 +22,14 @@ export function PillButton({
   selected = false,
   disabled = false,
   onPress,
+  onInfo,
   variant = 'light',
   selectedColor = theme.up,
   style,
 }: PillButtonProps) {
   const base = variant === 'light' ? styles.light : styles.dark;
   const text = variant === 'light' ? styles.lightText : styles.darkText;
-  return (
+  const pill = (
     <Pressable
       disabled={disabled}
       onPress={() => {
@@ -53,6 +56,15 @@ export function PillButton({
       <Text style={[text, selected && styles.selectedText]}>{label}</Text>
     </Pressable>
   );
+  if (!onInfo) return pill;
+  return (
+    <View style={styles.withInfo}>
+      {pill}
+      <Pressable hitSlop={8} onPress={onInfo} accessibilityLabel={`about ${label}`}>
+        <Text style={styles.info}>?</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -69,4 +81,18 @@ const styles = StyleSheet.create({
   selectedText: { color: theme.bone },
   disabled: { opacity: 0.4 },
   pressed: { transform: [{ scale: 0.96 }] },
+  withInfo: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  info: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 11,
+    color: theme.brassDeep,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.brassDeep,
+    borderRadius: 8,
+    width: 15,
+    height: 15,
+    textAlign: 'center',
+    lineHeight: 14,
+    overflow: 'hidden',
+  },
 });

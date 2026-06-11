@@ -24,6 +24,8 @@ import type { FormatConfig, FormatKey, JunkType, Player } from '@/engine/types';
 import { buildRound, defaultConfig, FORMAT_KEYS, FORMATS, formatAvailable, JUNK_TYPES } from '@/lib/formats';
 import { newId } from '@/lib/id';
 import { loadPresets, presetLabel, rememberPreset, type RoundPreset } from '@/lib/presets';
+import { GAME_RULES, JUNK_RULES } from '@/lib/rulebook';
+import { RuleBook, type RuleBookEntry } from '@/components/RuleBook';
 import { useRoundStore } from '@/store/roundStore';
 import { BRASS_GRADIENT, theme } from '@/theme';
 
@@ -41,6 +43,7 @@ export default function Setup() {
   const [greenieCarryover, setGreenieCarryover] = useState(false);
   const [team1, setTeam1] = useState<string[]>([]);
   const [presets, setPresets] = useState<RoundPreset[]>([]);
+  const [ruleEntry, setRuleEntry] = useState<RuleBookEntry | null>(null);
 
   useEffect(() => {
     loadPresets().then(setPresets);
@@ -327,7 +330,7 @@ export default function Setup() {
                       {sel ? '✓ ' : ''}
                       {f.label}
                     </Text>
-                    <Text style={[styles.formatPlayers, sel ? styles.onBrass : null]}>
+                    <Text style={[styles.formatPlayers, sel ? styles.onBrass : null, styles.formatPlayersPad]}>
                       {f.min === f.max ? `${f.min}P` : `${f.min}–${f.max}P`}
                     </Text>
                   </View>
@@ -336,15 +339,25 @@ export default function Setup() {
                 </>
               );
               return (
-                <Pressable key={k} disabled={!!reason} onPress={() => toggleFormat(k)}>
-                  {sel ? (
-                    <LinearGradient colors={BRASS_GRADIENT} locations={[0, 0.6, 1]} style={styles.formatSel}>
-                      {inner}
-                    </LinearGradient>
-                  ) : (
-                    <View style={[styles.formatCard, !!reason && styles.formatOff]}>{inner}</View>
-                  )}
-                </Pressable>
+                <View key={k}>
+                  <Pressable disabled={!!reason} onPress={() => toggleFormat(k)}>
+                    {sel ? (
+                      <LinearGradient colors={BRASS_GRADIENT} locations={[0, 0.6, 1]} style={styles.formatSel}>
+                        {inner}
+                      </LinearGradient>
+                    ) : (
+                      <View style={[styles.formatCard, !!reason && styles.formatOff]}>{inner}</View>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    hitSlop={10}
+                    accessibilityLabel={`about ${f.label}`}
+                    onPress={() => setRuleEntry({ title: f.label, body: GAME_RULES[k] })}
+                    style={styles.infoOverlay}
+                  >
+                    <Text style={[styles.infoMark, sel && styles.infoMarkSel]}>?</Text>
+                  </Pressable>
+                </View>
               );
             })}
           </View>
@@ -371,6 +384,7 @@ export default function Setup() {
                   selected={junkEnabled.includes(j.type)}
                   selectedColor={j.type === 'snake' ? theme.wax : theme.up}
                   onPress={() => toggleJunkType(j.type)}
+                  onInfo={() => setRuleEntry({ title: j.label, body: JUNK_RULES[j.type] })}
                 />
               ))}
             </View>
@@ -416,6 +430,7 @@ export default function Setup() {
           />
         </ScrollView>
       </KeyboardAvoidingView>
+      <RuleBook entry={ruleEntry} onClose={() => setRuleEntry(null)} />
     </SafeAreaView>
   );
 }
@@ -514,6 +529,22 @@ const styles = StyleSheet.create({
   formatHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   formatLabel: { fontFamily: theme.fontDisplay, fontSize: 21, color: theme.bone },
   formatPlayers: { fontFamily: theme.fontMonoLight, fontSize: 11, letterSpacing: 1, color: theme.boneMuted },
+  formatPlayersPad: { marginRight: 26 },
+  infoOverlay: { position: 'absolute', top: 14, right: 14, zIndex: 2 },
+  infoMark: {
+    fontFamily: theme.fontMonoLight,
+    fontSize: 12,
+    color: theme.brass,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.brass,
+    borderRadius: 9,
+    width: 18,
+    height: 18,
+    textAlign: 'center',
+    lineHeight: 16,
+    overflow: 'hidden',
+  },
+  infoMarkSel: { color: theme.brassInk, borderColor: 'rgba(36,27,8,0.6)' },
   formatBlurb: { fontFamily: theme.fontDisplayItalic, fontSize: 13, color: theme.boneMuted, marginTop: 4 },
   formatReason: { fontFamily: theme.fontUI, fontSize: 11, color: theme.down, marginTop: 5 },
   onBrass: { color: theme.brassInk },
