@@ -38,7 +38,7 @@ export const JUNK_RULES: Record<JunkType, string> = {
   ferret: 'Hole out from off the green — chip, pitch, or putt from the fringe.',
   goldenFerret: 'Hole out from the sand. The rarest dot on the card.',
   snake:
-    'Three-putt and the snake is yours until someone else three-putts. The pot grows by its value every hole played; whoever holds it at the end pays the pot, split by the table.',
+    'Three-putt and the snake is yours until someone else three-putts. Whoever holds it at the end pays the pot, split by the table. Run it growing — the pot adds its value every hole played — or flat, one fixed bet that never grows.',
   rabbit:
     'Win a hole outright and the rabbit runs with you; lose it when someone else wins one. The pot grows every hole, tracked automatically from the card. Hold it at the end and you collect.',
   bingo: 'First ball on the green. One of the three Bingo-Bango-Bongo dots.',

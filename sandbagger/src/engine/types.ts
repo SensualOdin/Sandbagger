@@ -117,11 +117,16 @@ export interface JunkEvent {
   type: JunkType;
   playerId: ID;
 }
+/** 'perHole': pot grows by the snake value every hole played. 'flat': fixed bet. */
+export type SnakeMode = 'perHole' | 'flat';
+
 export interface JunkConfig {
   enabled: JunkType[];
   values: Partial<Record<JunkType, number>>;
   /** Unwon par-3 greenies roll their value into the next par 3. */
   greenieCarryover?: boolean;
+  /** Defaults to 'perHole' (the growing pot) when absent. */
+  snakeMode?: SnakeMode;
 }
 
 export interface Round {

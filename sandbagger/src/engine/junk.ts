@@ -1,3 +1,4 @@
+import { netScores } from './handicap';
 import type { ID, JunkEvent, Round } from './types';
 import { holeEntered, playerIds, zeroNet } from './util';
 
@@ -6,12 +7,12 @@ import { holeEntered, playerIds, zeroNet } from './util';
  * other player. Runs on top of any game; disabled types are ignored, which
  * also keeps Bingo-Bango-Bongo format events out of the junk pool.
  *
- * Two animals are special, both hot potatoes whose pot grows by their value
- * on every hole played:
+ * Two animals are special, both hot potatoes:
  * - Snake: a snake event marks who 3-putted last. The holder at the end PAYS
- *   the pot, split by the others.
+ *   the pot, split by the others. The pot grows by the snake value every hole
+ *   played — or stays a flat bet when snakeMode is 'flat'.
  * - Rabbit: derived from scores — win a hole outright to take it. The holder
- *   at the end COLLECTS the pot, paid by the others.
+ *   at the end COLLECTS the pot (value x holes played), paid by the others.
  *
  * Greenie carryover: when enabled, every par 3 played without a greenie rolls
  * one more unit of value onto the next greenie awarded.
@@ -37,7 +38,8 @@ export function scoreJunk(round: Round): Record<ID, number> {
   if (enabled.includes('snake')) {
     const holder = snakeHolder(round.junk.events);
     if (holder) {
-      const pot = (values.snake ?? 0) * holesPlayed;
+      const flat = round.junk.config.snakeMode === 'flat';
+      const pot = (values.snake ?? 0) * (flat ? 1 : holesPlayed);
       for (const id of ids) {
         if (id === holder) net[id] -= pot;
         else net[id] += pot / (ids.length - 1);
@@ -81,14 +83,18 @@ export function snakeHolder(events: JunkEvent[]): ID | null {
   return holder;
 }
 
-/** Who won a hole outright last — straight from the card, no taps needed. */
+/**
+ * Who won a hole outright last — straight from the card, no taps needed.
+ * Uses net scores when the round does, so the rabbit agrees with the games.
+ */
 export function rabbitHolder(round: Round): ID | null {
   const ids = playerIds(round);
+  const scores = netScores(round);
   let holder: ID | null = null;
   for (let h = 0; h < round.numHoles; h++) {
-    if (!holeEntered(round.scores, h, ids)) continue;
-    const min = Math.min(...ids.map((id) => round.scores[h][id]));
-    const winners = ids.filter((id) => round.scores[h][id] === min);
+    if (!holeEntered(scores, h, ids)) continue;
+    const min = Math.min(...ids.map((id) => scores[h][id]));
+    const winners = ids.filter((id) => scores[h][id] === min);
     if (winners.length === 1) holder = winners[0];
   }
   return holder;

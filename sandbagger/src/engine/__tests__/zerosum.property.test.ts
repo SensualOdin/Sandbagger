@@ -119,7 +119,7 @@ function randomRound(fixture: Fixture, rnd: () => number): Round {
     useNetScoring: rnd() < 0.5,
     presses: fixture.formats.includes('nassau') && rnd() < 0.5 ? [{ leg: 'back', startHole: 12 }] : [],
     junk: {
-      config: { enabled: ['greenie', 'sandie', 'barkie', 'birdie', 'snake', 'rabbit', 'arnie', 'ferret'], values: { greenie: 1, sandie: 1, barkie: 2, birdie: 1, snake: 2, rabbit: 1, arnie: 1, ferret: 2 }, greenieCarryover: true },
+      config: { enabled: ['greenie', 'sandie', 'barkie', 'birdie', 'snake', 'rabbit', 'arnie', 'ferret'], values: { greenie: 1, sandie: 1, barkie: 2, birdie: 1, snake: 2, rabbit: 1, arnie: 1, ferret: 2 }, greenieCarryover: true, snakeMode: rnd() < 0.5 ? 'flat' : 'perHole' },
       events,
     },
   });

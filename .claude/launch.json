@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8088", "--directory", "sandbagger/dist"],
       "port": 8088
+    },
+    {
+      "name": "sandbagger-expo-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "sandbagger", "run", "web", "--", "--port", "8090"],
+      "port": 8090
     }
   ]
 }

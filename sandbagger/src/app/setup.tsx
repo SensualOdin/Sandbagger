@@ -20,7 +20,7 @@ import { Knob } from '@/components/Knob';
 import { PillButton } from '@/components/PillButton';
 import { Plaque } from '@/components/Plaque';
 import { Rule } from '@/components/Rule';
-import type { FormatConfig, FormatKey, JunkType, Player } from '@/engine/types';
+import type { FormatConfig, FormatKey, JunkType, Player, SnakeMode } from '@/engine/types';
 import { buildRound, defaultConfig, FORMAT_KEYS, FORMATS, formatAvailable, JUNK_TYPES } from '@/lib/formats';
 import { newId } from '@/lib/id';
 import { loadPresets, presetLabel, rememberPreset, type RoundPreset } from '@/lib/presets';
@@ -42,6 +42,7 @@ export default function Setup() {
   const [junkEnabled, setJunkEnabled] = useState<JunkType[]>([]);
   const [junkValues, setJunkValues] = useState<Partial<Record<JunkType, number>>>({});
   const [greenieCarryover, setGreenieCarryover] = useState(false);
+  const [snakeMode, setSnakeMode] = useState<SnakeMode>('perHole');
   const [team1, setTeam1] = useState<string[]>([]);
   const [presets, setPresets] = useState<RoundPreset[]>([]);
   const [ruleEntry, setRuleEntry] = useState<RuleBookEntry | null>(null);
@@ -97,6 +98,7 @@ export default function Setup() {
     setJunkEnabled(p.junkEnabled);
     setJunkValues(p.junkValues);
     setGreenieCarryover(p.greenieCarryover);
+    setSnakeMode(p.snakeMode ?? 'perHole');
     setTeam1([]); // vegas teams are per-round picks
   };
 
@@ -116,6 +118,7 @@ export default function Setup() {
       junkEnabled,
       junkValues,
       greenieCarryover,
+      snakeMode,
     };
     preset.label = presetLabel(preset);
     rememberPreset(preset);
@@ -129,6 +132,7 @@ export default function Setup() {
         junkEnabled,
         junkValues,
         greenieCarryover,
+        snakeMode,
       })
     );
     router.replace('/play');
@@ -394,7 +398,9 @@ export default function Setup() {
                 key={t}
                 label={
                   t === 'snake'
-                    ? 'Snake pot per hole'
+                    ? snakeMode === 'flat'
+                      ? 'Snake bet (flat)'
+                      : 'Snake pot per hole'
                     : t === 'rabbit'
                       ? 'Rabbit pot per hole'
                       : `${JUNK_TYPES.find((j) => j.type === t)!.label} value`
@@ -405,6 +411,10 @@ export default function Setup() {
                 onChange={(v) => setJunkValues((vals) => ({ ...vals, [t]: v }))}
               />
             ))}
+            {junkEnabled.includes('snake') && (
+              <RowToggle label="Snake pot grows every hole" value={snakeMode === 'perHole'}
+                onChange={(v) => setSnakeMode(v ? 'perHole' : 'flat')} />
+            )}
             {junkEnabled.includes('greenie') && (
               <RowToggle label="Greenies carry over par 3s" value={greenieCarryover}
                 onChange={setGreenieCarryover} />

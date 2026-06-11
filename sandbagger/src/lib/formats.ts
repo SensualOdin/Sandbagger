@@ -1,4 +1,4 @@
-import type { FormatConfig, FormatKey, JunkType, Player, Round } from '@/engine/types';
+import type { FormatConfig, FormatKey, JunkType, Player, Round, SnakeMode } from '@/engine/types';
 import { newId } from '@/lib/id';
 
 export interface FormatMeta {
@@ -38,7 +38,7 @@ export const JUNK_TYPES: { type: JunkType; label: string; hint: string }[] = [
   { type: 'ferret', label: 'Ferret', hint: 'hole out from off the green' },
   { type: 'goldenFerret', label: 'Golden Ferret', hint: 'hole out from the sand' },
   { type: 'rabbit', label: 'Rabbit', hint: 'win a hole outright to take it — holder collects the pot' },
-  { type: 'snake', label: 'Snake', hint: '3-putt holds it — pot grows every hole, holder pays at the end' },
+  { type: 'snake', label: 'Snake', hint: '3-putt holds it — holder pays the pot at the end' },
 ];
 
 export const defaultConfig = (players: Player[]): Required<FormatConfig> => ({
@@ -76,6 +76,7 @@ interface BuildRoundArgs {
   junkEnabled: JunkType[];
   junkValues: Partial<Record<JunkType, number>>;
   greenieCarryover: boolean;
+  snakeMode: SnakeMode;
 }
 
 export function buildRound(args: BuildRoundArgs): Round {
@@ -96,6 +97,7 @@ export function buildRound(args: BuildRoundArgs): Round {
         enabled: args.junkEnabled,
         values: args.junkValues,
         greenieCarryover: args.greenieCarryover,
+        snakeMode: args.snakeMode,
       },
       events: [],
     },

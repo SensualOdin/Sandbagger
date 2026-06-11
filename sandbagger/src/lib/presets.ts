@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { FormatConfig, FormatKey, JunkType } from '@/engine/types';
+import type { FormatConfig, FormatKey, JunkType, SnakeMode } from '@/engine/types';
 import { FORMATS } from '@/lib/formats';
 
 /** A saved table: the usual crew and their usual games, two taps to tee off. */
@@ -14,6 +14,8 @@ export interface RoundPreset {
   junkEnabled: JunkType[];
   junkValues: Partial<Record<JunkType, number>>;
   greenieCarryover: boolean;
+  /** Absent on presets saved before flat snakes existed — treat as 'perHole'. */
+  snakeMode?: SnakeMode;
 }
 
 const KEY = 'sb-quick-starts';
