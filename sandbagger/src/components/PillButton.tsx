@@ -1,6 +1,6 @@
-import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { tapSelect } from '@/lib/haptics';
 import { theme } from '@/theme';
 
 interface PillButtonProps {
@@ -33,7 +33,7 @@ export function PillButton({
     <Pressable
       disabled={disabled}
       onPress={() => {
-        Haptics.selectionAsync();
+        tapSelect();
         onPress();
       }}
       style={({ pressed }) => [

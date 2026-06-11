@@ -1,6 +1,6 @@
-import * as Haptics from 'expo-haptics';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { tapSelect } from '@/lib/haptics';
 import { theme } from '@/theme';
 
 interface StepperProps {
@@ -13,7 +13,7 @@ interface StepperProps {
 /** Big-thumb minus/plus stepper with haptics — the core on-course control. */
 export function Stepper({ display, onDec, onInc, size = 'large' }: StepperProps) {
   const tap = (fn: () => void) => () => {
-    Haptics.selectionAsync();
+    tapSelect();
     fn();
   };
   const btn = size === 'large' ? styles.btnLarge : styles.btnSmall;

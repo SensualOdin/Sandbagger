@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useMemo, useRef } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
@@ -52,7 +52,9 @@ export default function Settle() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(250).springify()}>
-          <Plaque kind="ghost" label="Share the damage" onPress={share} style={styles.shareBtn} />
+          {Platform.OS !== 'web' && (
+            <Plaque kind="ghost" label="Share the damage" onPress={share} style={styles.shareBtn} />
+          )}
           <View style={styles.actions}>
             <Plaque kind="ghost" label="← Back to round" onPress={() => router.back()} style={styles.flex1} />
             <Plaque label="Save & done" onPress={saveAndNew} style={styles.flex1} />

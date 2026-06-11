@@ -1,8 +1,8 @@
-import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import { tapImpact } from '@/lib/haptics';
 import { BRASS_GRADIENT, theme } from '@/theme';
 
 interface PlaqueProps {
@@ -20,7 +20,7 @@ export function Plaque({ label, onPress, disabled = false, kind = 'brass', style
   const pressed = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const press = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    tapImpact();
     onPress();
   };
 

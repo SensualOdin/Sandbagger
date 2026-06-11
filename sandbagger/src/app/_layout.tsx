@@ -15,7 +15,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { Backdrop } from '@/components/Backdrop';
 import { useRoundStore } from '@/store/roundStore';
@@ -45,16 +45,25 @@ export default function RootLayout() {
   if (!loaded || !hydrated) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.feltDeep }}>
+    <View style={styles.root}>
       <Backdrop />
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
-          animation: 'fade_from_bottom',
-        }}
-      />
+      {/* phone-frame column on the web; full bleed on device */}
+      <View style={[styles.frame, Platform.OS === 'web' && styles.webFrame]}>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: 'transparent' },
+            animation: 'fade_from_bottom',
+          }}
+        />
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: theme.feltDeep },
+  frame: { flex: 1, width: '100%' },
+  webFrame: { maxWidth: 520, alignSelf: 'center' },
+});
