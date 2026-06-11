@@ -13,6 +13,7 @@ import { computeResults } from '@/engine';
 import { snakeHolder } from '@/engine/junk';
 import type { Round } from '@/engine/types';
 import { useRoundStore } from '@/store/roundStore';
+import { enter } from '@/lib/anim';
 import { fmtMoney, theme } from '@/theme';
 
 /** First hole missing a score from anyone — where a resumed round picks up. */
@@ -167,7 +168,7 @@ export default function Play() {
             const rel = val != null ? val - par : null;
             const isWolf = p.id === wolfId;
             return (
-              <Animated.View key={p.id} entering={FadeInDown.delay(i * 50).springify()}>
+              <Animated.View key={p.id} entering={enter(FadeInDown.delay(i * 50).springify())}>
                 <Card framed style={[styles.scoreRow, isWolf && styles.wolfRow]}>
                   <View style={styles.scoreName}>
                     <Text style={styles.playerName} numberOfLines={1}>

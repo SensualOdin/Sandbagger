@@ -11,6 +11,7 @@ import { SettleView } from '@/components/settle/SettleView';
 import { computeResults } from '@/engine';
 import { saveRound } from '@/db/history';
 import { useRoundStore } from '@/store/roundStore';
+import { enter } from '@/lib/anim';
 import { theme } from '@/theme';
 
 export default function Settle() {
@@ -45,13 +46,13 @@ export default function Settle() {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Animated.View entering={FadeInDown.springify().damping(14)}>
+        <Animated.View entering={enter(FadeInDown.springify().damping(14))}>
           <View ref={shotRef} collapsable={false} style={styles.shot}>
             <SettleView round={round} result={result} />
           </View>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.delay(250).springify()}>
+        <Animated.View entering={enter(FadeInUp.delay(250).springify())}>
           {Platform.OS !== 'web' && (
             <Plaque kind="ghost" label="Share the damage" onPress={share} style={styles.shareBtn} />
           )}

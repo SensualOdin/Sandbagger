@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plaque } from '@/components/Plaque';
 import { SettleView } from '@/components/settle/SettleView';
 import { getRound } from '@/db/history';
+import { enter } from '@/lib/anim';
 import { theme } from '@/theme';
 
 export default function RoundDetail() {
@@ -17,7 +18,7 @@ export default function RoundDetail() {
     <SafeAreaView style={styles.root} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {saved ? (
-          <Animated.View entering={FadeInDown.springify().damping(14)}>
+          <Animated.View entering={enter(FadeInDown.springify().damping(14))}>
             <SettleView round={saved.round} result={saved.result} />
           </Animated.View>
         ) : (

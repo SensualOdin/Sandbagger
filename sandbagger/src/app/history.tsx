@@ -9,6 +9,7 @@ import { Plaque } from '@/components/Plaque';
 import { deleteRound, listRounds, type HistoryRow } from '@/db/history';
 import type { FormatKey } from '@/engine/types';
 import { FORMATS } from '@/lib/formats';
+import { enter } from '@/lib/anim';
 import { theme } from '@/theme';
 
 export default function History() {
@@ -48,7 +49,7 @@ export default function History() {
           keyExtractor={(r) => r.id}
           contentContainerStyle={styles.list}
           renderItem={({ item, index }) => (
-            <Animated.View entering={FadeInDown.delay(index * 60).springify()}>
+            <Animated.View entering={enter(FadeInDown.delay(index * 60).springify())}>
               <Pressable
                 onPress={() => router.push({ pathname: '/round/[id]', params: { id: item.id } })}
                 onLongPress={() => confirmDelete(item)}

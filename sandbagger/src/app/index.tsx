@@ -7,6 +7,7 @@ import { Crest } from '@/components/Crest';
 import { Plaque } from '@/components/Plaque';
 import { FORMATS } from '@/lib/formats';
 import { useRoundStore } from '@/store/roundStore';
+import { enter } from '@/lib/anim';
 import { theme } from '@/theme';
 
 export default function Home() {
@@ -24,34 +25,34 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
-        <Animated.View entering={FadeIn.duration(900)}>
+        <Animated.View entering={enter(FadeIn.duration(900))}>
           <Crest size={92} />
         </Animated.View>
         <Animated.Text
-          entering={FadeInDown.delay(120).springify()}
+          entering={enter(FadeInDown.delay(120).springify())}
           style={styles.title}
           numberOfLines={1}
           adjustsFontSizeToFit
         >
           Sandbagger
         </Animated.Text>
-        <Animated.View entering={FadeInDown.delay(260).springify()} style={styles.estRow}>
+        <Animated.View entering={enter(FadeInDown.delay(260).springify())} style={styles.estRow}>
           <View style={styles.estLine} />
           <Text style={styles.subtitle}>GOLF MONEY GAMES</Text>
           <View style={styles.estLine} />
         </Animated.View>
-        <Animated.Text entering={FadeIn.delay(420).duration(700)} style={styles.motto}>
+        <Animated.Text entering={enter(FadeIn.delay(420).duration(700))} style={styles.motto}>
           trust the card, not the player
         </Animated.Text>
       </View>
 
       <View style={styles.actions}>
-        <Animated.View entering={FadeInDown.delay(300).springify()}>
+        <Animated.View entering={enter(FadeInDown.delay(300).springify())}>
           <Plaque label="New round" onPress={() => router.push('/setup')} />
         </Animated.View>
 
         {active && (
-          <Animated.View entering={FadeInDown.delay(380).springify()}>
+          <Animated.View entering={enter(FadeInDown.delay(380).springify())}>
             <Plaque
               kind="ghost"
               label={`Resume ${active.formats.map((f) => FORMATS[f].label).join(' + ')} · ${holesEntered}/${active.numHoles} holes`}
@@ -61,7 +62,7 @@ export default function Home() {
         )}
 
         {unsettled && (
-          <Animated.View entering={FadeInDown.delay(380).springify()}>
+          <Animated.View entering={enter(FadeInDown.delay(380).springify())}>
             <Plaque
               kind="ghost"
               label={`Finish settling ${unsettled.formats.map((f) => FORMATS[f].label).join(' + ')}`}
@@ -70,12 +71,12 @@ export default function Home() {
           </Animated.View>
         )}
 
-        <Animated.View entering={FadeInDown.delay(460).springify()}>
+        <Animated.View entering={enter(FadeInDown.delay(460).springify())}>
           <Plaque kind="ghost" label="History" onPress={() => router.push('/history')} />
         </Animated.View>
       </View>
 
-      <Animated.Text entering={FadeIn.delay(700).duration(800)} style={styles.footer}>
+      <Animated.Text entering={enter(FadeIn.delay(700).duration(800))} style={styles.footer}>
         Sandbagger tracks friendly wagers. It never moves money — settle up
         yourselves, responsibly and legally.
       </Animated.Text>

@@ -10,6 +10,7 @@ import { Rule } from '@/components/Rule';
 import { getAllRounds } from '@/db/history';
 import type { FormatKey } from '@/engine/types';
 import { FORMATS } from '@/lib/formats';
+import { enter } from '@/lib/anim';
 import { fmtMoney, theme } from '@/theme';
 
 interface PlayerStats {
@@ -80,7 +81,7 @@ export default function Stats() {
           </View>
         ) : (
           stats.map((s, i) => (
-            <Animated.View key={s.name} entering={FadeInDown.delay(i * 70).springify()}>
+            <Animated.View key={s.name} entering={enter(FadeInDown.delay(i * 70).springify())}>
               <Card framed style={styles.card}>
                 <View style={styles.head}>
                   <Text style={styles.name}>

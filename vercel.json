@@ -1,0 +1,9 @@
+{
+  "installCommand": "cd sandbagger && npm install",
+  "buildCommand": "cd sandbagger && npx expo export --platform web",
+  "outputDirectory": "sandbagger/dist",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [{ "source": "/round/:id", "destination": "/round/[id].html" }]
+}

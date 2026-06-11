@@ -27,6 +27,7 @@ import { loadPresets, presetLabel, rememberPreset, type RoundPreset } from '@/li
 import { GAME_RULES, JUNK_RULES } from '@/lib/rulebook';
 import { RuleBook, type RuleBookEntry } from '@/components/RuleBook';
 import { useRoundStore } from '@/store/roundStore';
+import { enter } from '@/lib/anim';
 import { BRASS_GRADIENT, theme } from '@/theme';
 
 const mkPlayer = (): Player => ({ id: newId(), name: '' });
@@ -236,7 +237,7 @@ export default function Setup() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Animated.View entering={FadeInDown.springify()}>
+          <Animated.View entering={enter(FadeInDown.springify())}>
             <Pressable onPress={() => router.back()} hitSlop={12} style={styles.close}>
               <Text style={styles.closeGlyph}>✕</Text>
             </Pressable>
@@ -257,7 +258,7 @@ export default function Setup() {
           )}
 
           <Rule label="Players" />
-          <Animated.View entering={FadeInDown.delay(80).springify()}>
+          <Animated.View entering={enter(FadeInDown.delay(80).springify())}>
             <Card framed style={styles.playersCard}>
               {players.map((p, i) => (
                 <View key={p.id} style={[styles.playerRow, i > 0 && styles.rowDivider]}>

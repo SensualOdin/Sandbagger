@@ -11,7 +11,7 @@ import {
   HankenGrotesk_700Bold,
 } from '@expo-google-fonts/hanken-grotesk';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -22,6 +22,13 @@ import { useRoundStore } from '@/store/roundStore';
 import { theme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+// react-navigation paints its theme background behind every screen (visible on
+// web, where contentStyle is ignored) — make it the felt, never default grey.
+const clubTheme = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: 'transparent', card: 'transparent' },
+};
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -50,13 +57,15 @@ export default function RootLayout() {
       {/* phone-frame column on the web; full bleed on device */}
       <View style={[styles.frame, Platform.OS === 'web' && styles.webFrame]}>
         <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: 'transparent' },
-            animation: 'fade_from_bottom',
-          }}
-        />
+        <ThemeProvider value={clubTheme}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: 'transparent' },
+              animation: 'fade_from_bottom',
+            }}
+          />
+        </ThemeProvider>
       </View>
     </View>
   );
