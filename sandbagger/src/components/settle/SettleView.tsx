@@ -93,7 +93,7 @@ export function SettleView({ round, result }: SettleViewProps) {
 
           <Breakdown round={round} result={result} name={name} />
 
-          <Text style={styles.stamp}>SETTLE RESPONSIBLY · PRESS</Text>
+          <Text style={styles.stamp}>TRUST THE CARD, NOT THE PLAYER · SANDBAGGER</Text>
         </View>
         <TicketEdge position="bottom" />
       </Card>

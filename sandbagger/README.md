@@ -1,15 +1,18 @@
-# Press — Golf Money Games
+# Sandbagger — Golf Money Games
+
+*Trust the card, not the player.*
 
 A fast, single-phone, betting-first golf scorekeeper. One person tracks for the group;
-Press computes every side game and nets everyone down to "who pays whom" in one tap.
-It never moves money — it's a calculator, not a gambling app.
+Sandbagger computes every side game and nets everyone down to "who pays whom" in one
+tap. It never moves money — it's a calculator, not a gambling app.
 
 ## Formats
 
 Skins (carryover + value-mode house rules), Nassau (auto + manual presses), Wolf (3–5
 players, lone/blind multipliers), Vegas (flip-the-bird), Bingo-Bango-Bongo, Match play,
 Stroke play, Six-Point — plus a junk/dots layer (greenie, sandie, barkie, chippie,
-birdie, eagle, polie, snake) on top of any format, and optional handicap/net scoring.
+birdie, eagle, polie) and the snake (hot-potato pot: grows every hole, last 3-putt
+holds it, holder pays at the end), and optional handicap/net scoring.
 
 ## Run it
 
@@ -37,10 +40,11 @@ npx jest src/engine
 src/
   app/         expo-router screens (index, setup, play, settle, history, round/[id])
   engine/      scoring engine: formats/, junk, handicap, settle, dispatcher
-  store/       zustand active-round store (AsyncStorage-persisted)
+  store/       zustand active-round store (AsyncStorage-persisted, hydration-gated)
   db/          sqlite round history
-  components/  Card, Stepper, Knob, PillButton, play/, settle/
-  theme/       felt/brass/bone tokens + fonts
+  components/  Backdrop, Crest, Plaque, Rule, TicketEdge, Card, Stepper, play/, settle/
+  theme/       "private club ledger" design tokens + fonts
 ```
 
-Reference docs live in the repo root under `docs/` (build blueprint, design doc, plans).
+Reference docs live in the repo root under `docs/` (build blueprint, design doc, plans
+— written under the working title "Press").

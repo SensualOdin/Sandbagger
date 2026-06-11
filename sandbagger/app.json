@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "press",
-    "slug": "press",
+    "name": "Sandbagger",
+    "slug": "sandbagger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "press",
+    "scheme": "sandbagger",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

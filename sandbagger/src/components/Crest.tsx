@@ -31,7 +31,7 @@ export function Crest({ size = 96 }: { size?: number }) {
         fontSize={34}
         fill={theme.bone}
       >
-        P
+        S
       </SvgText>
       {/* compass ticks */}
       {[0, 90, 180, 270].map((deg) => (

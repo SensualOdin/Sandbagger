@@ -27,8 +27,13 @@ export default function Home() {
         <Animated.View entering={FadeIn.duration(900)}>
           <Crest size={92} />
         </Animated.View>
-        <Animated.Text entering={FadeInDown.delay(120).springify()} style={styles.title}>
-          Press
+        <Animated.Text
+          entering={FadeInDown.delay(120).springify()}
+          style={styles.title}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          Sandbagger
         </Animated.Text>
         <Animated.View entering={FadeInDown.delay(260).springify()} style={styles.estRow}>
           <View style={styles.estLine} />
@@ -36,7 +41,7 @@ export default function Home() {
           <View style={styles.estLine} />
         </Animated.View>
         <Animated.Text entering={FadeIn.delay(420).duration(700)} style={styles.motto}>
-          scoring is easy — the money is the game
+          trust the card, not the player
         </Animated.Text>
       </View>
 
@@ -71,8 +76,8 @@ export default function Home() {
       </View>
 
       <Animated.Text entering={FadeIn.delay(700).duration(800)} style={styles.footer}>
-        Press tracks friendly wagers. It never moves money — settle up yourselves,
-        responsibly and legally.
+        Sandbagger tracks friendly wagers. It never moves money — settle up
+        yourselves, responsibly and legally.
       </Animated.Text>
     </SafeAreaView>
   );
@@ -83,10 +88,11 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', paddingTop: 64 },
   title: {
     fontFamily: theme.fontDisplayBlack,
-    fontSize: 76,
+    fontSize: 56,
     color: theme.bone,
-    letterSpacing: -2,
+    letterSpacing: -1.5,
     marginTop: 14,
+    maxWidth: '100%',
     textShadowColor: 'rgba(0,0,0,0.45)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 12,
